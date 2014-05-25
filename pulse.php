@@ -3,7 +3,7 @@
 // Current script version. Major version is for fairly major overhauls of the script.
 // Minor version is for enhancements to the current script, and revisions are for any
 // bug fixes.
-$version = "1.0.0001";
+$version = "1.0.0008";
 
 // We're using Simple HTML DOM to parse the HTML output from the Fox Sport Pulse page.
 // http://simplehtmldom.sourceforge.net/
