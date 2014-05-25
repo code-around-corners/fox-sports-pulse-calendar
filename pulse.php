@@ -542,8 +542,21 @@ function fspc_main() {
 		$timecheck = array();
 		$complist = $_GET['comps'];
 		$teamname = '';
-		$gamedata = fspc_parse_calendar($timecheck, $complist, $teamname);
 		
+		// Default start and end ranges if they're not specified.
+		$startdate = '1900-01-01';
+		$enddate = '2099-01-01';
+	
+		// Now we grab the ranges from the URL if they exist.
+		if ( isset($_GET['sd']) ) $startdate = $_GET['sd'];
+		if ( isset($_GET['ed']) ) $enddate = $_GET['ed'];
+	
+		// And we create some date variables.
+		$dstart = strtotime($startdate);
+		$dend = strtotime($enddate . ' + 1 day - 1 second');
+
+		$gamedata = fspc_parse_calendar($timecheck, $complist, $teamname, $dstart, $dend);
+
 		// We check if we have any elements returned from the calendar. If we don't, then they've
 		// probably moved onto their next season. We need to rerun our competition check in that
 		// case and try again. This only works when we have a club ID.
@@ -576,7 +589,7 @@ function fspc_main() {
 				
 				if ( $complist != '' ) {
 					$complist = substr($complist, 0, strlen($complist) - 1);
-					$gamedata = fspc_parse_calendar($timecheck, $complist, $teamname);
+					$gamedata = fspc_parse_calendar($timecheck, $complist, $teamname, $dstart, $dend);
 				}
 			}
 			
@@ -631,7 +644,7 @@ function fspc_main() {
 			$shorticsid = explode('-', $_GET['ics']);
 			
 			foreach ( $shorticsid as $shortics ) {
-				$extdata[$priority] = fspc_parse_external_calendar($timecheck, $shortics, $exttz, $timezone, $priority);
+				$extdata[$priority] = fspc_parse_external_calendar($timecheck, $shortics, $exttz, $timezone, $priority, $dstart, $dend);
 				$priority++;
 			}
 		}
@@ -682,24 +695,12 @@ function fspc_team_in_comp($assocID, $compID, $teamID) {
 }
 
 // This function parses the FSP calendar and returns all the events in an array.
-function fspc_parse_calendar(&$timecheck, $complist, &$teamname) {
+function fspc_parse_calendar(&$timecheck, $complist, &$teamname, $dstart, $dend) {
 	$assocID = $_GET['assoc'];
 	$clubID = $_GET['club'];
 	$teamID = $_GET['team'];
 	$compID = explode("-", $complist);
 	
-	// Default start and end ranges if they're not specified.
-	$startdate = '1900-01-01';
-	$enddate = '2099-01-01';
-	
-	// Now we grab the ranges from the URL if they exist.
-	if ( isset($_GET['sd']) ) $startdate = $_GET['sd'];
-	if ( isset($_GET['ed']) ) $enddate = $_GET['ed'];
-	
-	// And we create some date variables.
-	$dstart = strtotime($startdate);
-	$dend = strtotime($enddate . ' + 1 day - 1 second');
-
 	$gamedata = array();
 	$gamelength = '45 minutes';
 
@@ -817,7 +818,7 @@ function fspc_parse_calendar(&$timecheck, $complist, &$teamname) {
 }
 
 // This function parses an external calendar URL and stores it's data into an array.
-function fspc_parse_external_calendar(&$timecheck, $shorturl, &$exttz, $timezone, $priority) {
+function fspc_parse_external_calendar(&$timecheck, $shorturl, &$exttz, $timezone, $priority, $dstart, $dend) {
 	// First we need to get the full URL.
 	$url = 'http://cdac.link/' . $shorturl;
 	
@@ -834,9 +835,12 @@ function fspc_parse_external_calendar(&$timecheck, $shorturl, &$exttz, $timezone
 	$eventdata = '';
 	$dtstamp = '';
 	$extdata = array();
+	$skipevent = false;
 
 	// We iterate through each line of the iCal, and look for tags to extract data.
 	foreach($lines as $line) {
+		$skipline = false;
+		
 		// If we've found a timezone block, we start tracking it so we can include
 		// the timezone in the output.
 		if ( strpos($line, 'BEGIN:VTIMEZONE') !== false ) {
@@ -850,6 +854,7 @@ function fspc_parse_external_calendar(&$timecheck, $shorturl, &$exttz, $timezone
 			$inevent = 1;
 			$eventdata = '';
 			$dtstamp = '';
+			$skipevent = false;
 		}
 	
 		// If we're in a timezone block, we extract the data as is.
@@ -871,6 +876,10 @@ function fspc_parse_external_calendar(&$timecheck, $shorturl, &$exttz, $timezone
 			if ( strpos($line, 'DTSTART') !== false ) {
 				$dtstamp = substr($line, strpos($line, ':') + 1);
 				if ( strlen($dtstamp) == 8 ) $dtstamp .= 'T000000';
+				
+				// We don't filter events based on the time, so we only need the date portion of the start date.
+				$fdtstamp = strtotime(substr($dtstamp, 0, 4) . '-' . substr($dtstamp, 4, 2) . '-' . substr($dtstamp, 6, 2));
+				if ( $fdtstamp < $dstart || $fdtstamp > $dend ) $skipevent = true;
 			}
 		}
 	
@@ -887,12 +896,15 @@ function fspc_parse_external_calendar(&$timecheck, $shorturl, &$exttz, $timezone
 		// into the timecheck array.
 		if ( strpos($line, 'END:VEVENT') !== false ) {
 			$inevent = 0;
-			$extdata[$dtstamp] = $eventdata;
 			
-			if ( isset($timecheck[$dtstamp]) ) {
-				$timecheck[$dtstamp] += (1 << $priority);
-			} else {
-				$timecheck[$dtstamp] = (1 << $priority);
+			if ( ! $skipevent ) {
+				$extdata[$dtstamp] = $eventdata;
+			
+				if ( isset($timecheck[$dtstamp]) ) {
+					$timecheck[$dtstamp] += (1 << $priority);
+				} else {
+					$timecheck[$dtstamp] = (1 << $priority);
+				}
 			}
 		}
 	}
