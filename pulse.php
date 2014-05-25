@@ -15,6 +15,11 @@ include('simple_html_dom.php');
 //error_reporting(E_ALL);
 //ini_set('display_errors', '1');
 
+// This is the number of competitions we'll check each iteration of the check. This is
+// to reduce the visible delay when you try to access a calendar where the full comp
+// check required.
+$maxcompcheck = 10;
+
 // This function outputs the main page header details. This gets called any time we create
 // a page that actually requires a HTML header. iCal output does not.
 function fspc_html_header() {
@@ -580,10 +585,35 @@ function fspc_main() {
 				$complist = fspc_get_all_comps($assocID);
 				$comparray = explode('-', $complist);
 				$complist = '';
+				$checked = '';
+				
+				global $maxcompcheck;
+				$curcompcheck = 0;
+				
+				if ( isset($_GET['check']) ) $checked = $_GET['check'];
+				if ( isset($_GET['valid']) ) $complist = $_GET['valid'];
 				
 				foreach($comparray as $comp) {
-					if ( fspc_team_in_comp($assocID, $comp, $teamID) ) {
-						$complist .= $comp . '-';
+					if ( strpos($checked, $comp) !== false ) {
+						$curcompcheck++;
+						$checked .= $comp . '-';
+						
+						if ( fspc_team_in_comp($assocID, $comp, $teamID) ) {
+							$complist .= $comp . '-';
+						}
+					}
+					
+					// If we've hit the maximum competition checks on this pass, we add what's been checked
+					// to the URL and reload the calendar to continue with the next pass.
+					if ( $curcompcheck == $maxcompcheck ) {
+						$url = 'http://' . $_SERVER['HTTP_HOST'] . $_SERVER['REQUEST_URI'];
+						if ( strpos($url, '&check=') !== false ) {
+							$url = substr($url, 0, strpos($url, '&check='));
+						}
+						
+						$url .= '&check=' . $checked . '&valid=' . $complist;
+						header('Location: ' . $url);
+						return;
 					}
 				}
 				
@@ -600,6 +630,10 @@ function fspc_main() {
 				// short URL if the URL already exists, we can use the existing shorten
 				// function to get this data.
 				$url = 'http://' . $_SERVER['HTTP_HOST'] . $_SERVER['REQUEST_URI'];
+				if ( strpos($url, '&check=') !== false ) {
+					$url = substr($url, 0, strpos($url, '&check='));
+				}
+
 				$url = str_replace('&t=1', '', $url);
 				$url = str_replace('?t=1&', '?', $url);
 				$shorturl = fspc_yourls_get($url);
