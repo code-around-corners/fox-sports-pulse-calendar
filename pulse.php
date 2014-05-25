@@ -1040,7 +1040,11 @@ function fspc_output_calendar($timecheck, $gamedata, $teamname, $timezone, $extd
 			}
 
 			echo "LOCATION:" . $location . "\r\n";
-			echo "URL:http://www.foxsportspulse.com/" . str_replace('&amp;', '&', $game['gameurl']) . "\r\n";
+			
+			if ( $game['gameurl'] != '' ) {
+				echo "URL:http://www.foxsportspulse.com/" . str_replace('&amp;', '&', $game['gameurl']) . "\r\n";
+			}
+			
 			echo "END:VEVENT\r\n";
 		}
 		
