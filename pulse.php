@@ -785,7 +785,7 @@ function fspc_parse_calendar(&$timecheck, $complist, &$teamname) {
 					$enddate = strtotime($strdate . ' ' . $strtime . ' + 1 day');
 				}
 
-				if ( $startdate < $dstart || $startdate > $dend ) {
+				if ( ! ($startdate < $dstart || $startdate > $dend) ) {
 					$uid = date('YmdHis', $startdate);
 					$dtstamp = date('Ymd\THis', $startdate);
 			
