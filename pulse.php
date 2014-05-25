@@ -687,6 +687,18 @@ function fspc_parse_calendar(&$timecheck, $complist, &$teamname) {
 	$clubID = $_GET['club'];
 	$teamID = $_GET['team'];
 	$compID = explode("-", $complist);
+	
+	// Default start and end ranges if they're not specified.
+	$startdate = '1900-01-01';
+	$enddate = '2099-01-01';
+	
+	// Now we grab the ranges from the URL if they exist.
+	if ( isset($_GET['sd']) ) $startdate = $_GET['sd'];
+	if ( isset($_GET['ed']) ) $enddate = $_GET['ed'];
+	
+	// And we create some date variables.
+	$dstart = strtotime($startdate);
+	$dend = strtotime($enddate);
 
 	$gamedata = array();
 	$gamelength = '45 minutes';
@@ -773,28 +785,30 @@ function fspc_parse_calendar(&$timecheck, $complist, &$teamname) {
 					$enddate = strtotime($strdate . ' ' . $strtime . ' + 1 day');
 				}
 
-				$uid = date('YmdHis', $startdate);
-				$dtstamp = date('Ymd\THis', $startdate);
+				if ( $startdate < $dstart || $startdate > $dend ) {
+					$uid = date('YmdHis', $startdate);
+					$dtstamp = date('Ymd\THis', $startdate);
 			
-				$rounddata = array();
-				$rounddata['round'] = $round;
-				$rounddata['rawdate'] = $rawdate;
-				$rounddata['rawtime'] = $rawtime;
-				$rounddata['uid'] = $uid;
-				$rounddate['dtstamp'] = $dtstamp;
-				$rounddata['allday'] = $allday;
-				$rounddata['gamestart'] = $startdate;
-				$rounddata['gameend'] = $enddate;
-				$rounddata['venueurl'] = $venueurl;
-				$rounddata['venue'] = $venue;
-				$rounddata['scorefor'] = $scorefor;
-				$rounddata['opponenturl'] = $opponenturl;
-				$rounddata['opponent'] = $opponent;
-				$rounddata['scoreagainst'] = $scoreagainst;
-				$rounddata['gameurl'] = $gameurl;
+					$rounddata = array();
+					$rounddata['round'] = $round;
+					$rounddata['rawdate'] = $rawdate;
+					$rounddata['rawtime'] = $rawtime;
+					$rounddata['uid'] = $uid;
+					$rounddate['dtstamp'] = $dtstamp;
+					$rounddata['allday'] = $allday;
+					$rounddata['gamestart'] = $startdate;
+					$rounddata['gameend'] = $enddate;
+					$rounddata['venueurl'] = $venueurl;
+					$rounddata['venue'] = $venue;
+					$rounddata['scorefor'] = $scorefor;
+					$rounddata['opponenturl'] = $opponenturl;
+					$rounddata['opponent'] = $opponent;
+					$rounddata['scoreagainst'] = $scoreagainst;
+					$rounddata['gameurl'] = $gameurl;
 			
-				$gamedata[$dtstamp] = $rounddata;
-				$timecheck[$dtstamp] = 1;
+					$gamedata[$dtstamp] = $rounddata;
+					$timecheck[$dtstamp] = 1;
+				}
 			}
 		}
 	}
