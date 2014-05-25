@@ -698,7 +698,7 @@ function fspc_parse_calendar(&$timecheck, $complist, &$teamname) {
 	
 	// And we create some date variables.
 	$dstart = strtotime($startdate);
-	$dend = strtotime($enddate);
+	$dend = strtotime($enddate . ' + 1 day - 1 second');
 
 	$gamedata = array();
 	$gamelength = '45 minutes';
