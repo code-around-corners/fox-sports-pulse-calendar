@@ -18,7 +18,7 @@ include('simple_html_dom.php');
 // This is the number of competitions we'll check each iteration of the check. This is
 // to reduce the visible delay when you try to access a calendar where the full comp
 // check required.
-$maxcompcheck = 10;
+$maxcompcheck = 5;
 
 // This function outputs the main page header details. This gets called any time we create
 // a page that actually requires a HTML header. iCal output does not.
@@ -594,7 +594,7 @@ function fspc_main() {
 				if ( isset($_GET['valid']) ) $complist = $_GET['valid'];
 				
 				foreach($comparray as $comp) {
-					if ( strpos($checked, $comp) !== false ) {
+					if ( strpos($checked, $comp) === false ) {
 						$curcompcheck++;
 						$checked .= $comp . '-';
 						
