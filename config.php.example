@@ -1,0 +1,49 @@
+<?php
+
+    /*
+     This file is part of Fox Sports Calendar Subcription.
+     
+     Fox Sports Calendar Subcription is free software: you can redistribute
+     it and/or modify it under the terms of the GNU General Public License
+     as published by the Free Software Foundation, either version 3 of the
+     License, or (at your option) any later version.
+     
+     Fox Sports Calendar Subcription is distributed in the hope that it will
+     be useful, but WITHOUT ANY WARRANTY; without even the implied warranty
+     of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+     GNU General Public License for more details.
+     
+     You should have received a copy of the GNU General Public License
+     along with Fox Sports Calendar Subcription.  If not,
+     see <http://www.gnu.org/licenses/>.
+     */
+
+    // This will enable or disable the use of YOURLS to generate short links
+    // for use in the program. If you disable this, the calendar links you
+    // get will be the full URL for the calendar. Some iCal programs may
+    // struggle with this. (Boolean)
+    $FSPC_YOURLS_ENABLE = true;
+    
+    // This is the base URL to your YOURLS subscription. If you're not using
+    // YOURLS, you can leave this blank. (String)
+    $FSPC_YOURLS_URL = '';
+    
+    // This is your YOURLS encrypted key, used to make requests to YOURLS
+    // via it's web API. (String)
+    $FSPC_YOURLS_KEY = '';
+    
+    // If you have the appropriate plugin installed for YOURLS, you can
+    // have the tool automatically update calendar links when it's discovered
+    // they have changed. (Boolean)
+    $FSPC_YOURLS_AUTO_UPDATE = true;
+    
+    // This is the maximum number of competitions we will check at a time
+    // when checking an association page for new competitions. The default
+    // is set to 5. Increase this if your iCal clients can cope with longer
+    // delays when checking a calendar. (Integer)
+    $FSPC_MAX_COMP_CHECK = 5;
+    
+    // Turn this on to enable debugging. (Boolean)
+    $FSPC_DEBUG = false;
+    
+?>
