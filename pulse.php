@@ -392,6 +392,20 @@ function fspc_html_footer() {
 <?php
 }
 
+function fspc_get_club_name($assocID, $clubID) {
+	$url = fspc_gen_link($assocID, $clubID, 0, 0, 1);
+	$html = file_open_html($url);
+	
+	$div = $html->find("div[class=historybar-left]", 0);
+	
+	$teamname = '';
+	if ( isset($div) ) {
+		$teamname = $div->find("a", 1)->text;
+	}
+	
+	return $teamname;
+}
+
 function fspc_main() {
 	// If we're using anything other than mode 2, we need to display the HTML headers.
 	if ( fspc_get_mode() != 2 ) {
@@ -544,6 +558,10 @@ function fspc_main() {
 			}
 		}
 	} else if ( fspc_get_mode() == 2 ) {
+		$assocID = $_GET['assoc'];
+		$clubID = $_GET['club'];
+		$teamID = $_GET['team'];
+
 		$timecheck = array();
 		$complist = $_GET['comps'];
 		$teamname = '';
@@ -561,15 +579,17 @@ function fspc_main() {
 		$dend = strtotime($enddate . ' + 1 day - 1 second');
 
 		$gamedata = fspc_parse_calendar($timecheck, $complist, $teamname, $dstart, $dend);
+		
+		// If at this point the team name is blank, and we have a club ID available, we'll check the
+		// club name listed on the club page. Generally at this point it means we've got a data
+		// issue anyway, but we still want some data showing if possible.
+		if ( $teamname == '' ) $teamname = fspc_get_club_name($assocID, $clubID);
+		if ( $teamname == '' ) $teamname = 'FSP Team Calendar';
 
 		// We check if we have any elements returned from the calendar. If we don't, then they've
 		// probably moved onto their next season. We need to rerun our competition check in that
 		// case and try again. This only works when we have a club ID.
 		if ( count($gamedata) == 0 ) {
-			$assocID = $_GET['assoc'];
-			$clubID = $_GET['club'];
-			$teamID = $_GET['team'];
-
 			// First, we'll check the club page to see if the team is listed there. If they
 			// are, we'll use that competition ID to determine the calendar events.
 			$complist = '';
@@ -960,7 +980,7 @@ function fspc_output_calendar($timecheck, $gamedata, $teamname, $timezone, $extd
 	
 	$clash = 1;
 	if ( isset($_GET['cl']) ) $clash = $_GET['cl'];
-
+	
 	echo "BEGIN:VCALENDAR\r\n";
 	echo "VERSION:2.0\r\n";
 	echo "PRODID:-//Code Around Corners//Fox Sports Pulse Calendar Subscription Tool v" . $version . "//EN\r\n";
