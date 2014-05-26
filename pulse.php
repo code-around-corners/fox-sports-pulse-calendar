@@ -211,6 +211,10 @@
             if ( isset($_GET['gl']) ) $gamelength = preg_replace('/[^0-9]*/', '', $_GET['gl']);
             if ( $gamelength == '' ) $gamelength = 45;
             
+            // And also our text variable for debugging.
+            $text = false;
+            if ( isset($_GET['t']) ) $text = true;
+            
             // And we create some date variables.
             $dstart = strtotime($startdate);
             $dend = strtotime($enddate . ' + 1 day - 1 second');
@@ -277,6 +281,7 @@
                     
                     if ( $complist != '' ) {
                         $complist = substr($complist, 0, strlen($complist) - 1);
+
                         $gamedata = fspc_fsp_parse_calendar($timecheck, $complist, $teamname, $dstart, $dend,
                                                             $sportID, $assocID, $clubID, $teamID, $gamelength);
                     }
@@ -346,9 +351,6 @@
             $clash = '';
             if ( isset($_GET['cl']) ) $clash = preg_replace('/[^0-9]*/', '', $_GET['cl']);
             if ( $clash == '' ) $clash = 1;
-            
-            $text = false;
-            if ( isset($_GET['t']) ) $text = true;
             
             fspc_cal_output_calendar($timecheck, $gamedata, $teamname, $timezone, $extdata, $exttz, $clash, $text);
         }
