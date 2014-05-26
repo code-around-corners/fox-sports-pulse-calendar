@@ -3,7 +3,7 @@
 // Current script version. Major version is for fairly major overhauls of the script.
 // Minor version is for enhancements to the current script, and revisions are for any
 // bug fixes.
-$version = "1.0.0008";
+$version = "1.0.0009";
 
 // We're using Simple HTML DOM to parse the HTML output from the Fox Sport Pulse page.
 // http://simplehtmldom.sourceforge.net/
@@ -394,13 +394,13 @@ function fspc_html_footer() {
 
 function fspc_get_club_name($assocID, $clubID) {
 	$url = fspc_gen_link($assocID, $clubID, 0, 0, 1);
-	$html = file_open_html($url);
+	$html = file_get_html($url);
 	
 	$div = $html->find("div[class=historybar-left]", 0);
 	
 	$teamname = '';
 	if ( isset($div) ) {
-		$teamname = $div->find("a", 1)->text;
+		$teamname = $div->find("a", 1)->plaintext;
 	}
 	
 	return $teamname;
@@ -704,7 +704,7 @@ function fspc_main() {
 		}
 		
 		// Now we output the calendar based on whatever fields we have available.
-		fspc_output_calendar($timecheck, $gamedata, $teamname, $timezone, $extdata, $ezttz);
+		fspc_output_calendar($timecheck, $gamedata, $teamname, $timezone, $extdata, $exttz);
 	}
 
 	// Finally, we show the footer, but only if we're not in iCal mode.
