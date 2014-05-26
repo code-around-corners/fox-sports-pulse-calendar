@@ -277,6 +277,7 @@
                     
                     if ( $complist != '' ) {
                         $complist = substr($complist, 0, strlen($complist) - 1);
+
                         $gamedata = fspc_fsp_parse_calendar($timecheck, $complist, $teamname, $dstart, $dend,
                                                             $sportID, $assocID, $clubID, $teamID, $gamelength);
                     }
