@@ -43,6 +43,10 @@
     // delays when checking a calendar. (Integer)
     $FSPC_MAX_COMP_CHECK = 5;
     
+    // This is the default team name if the tool isn't able to find a valid club
+    // or team name for the selected calendar.
+    $FSPC_DEFAULT_TEAM_NAME = 'FSP Team Calendar';
+
     // Turn this on to enable debugging. (Boolean)
     $FSPC_DEBUG = false;
     

@@ -1,5 +1,23 @@
 <?php
-
+    
+    /*
+     This file is part of Fox Sports Calendar Subcription.
+     
+     Fox Sports Calendar Subcription is free software: you can redistribute
+     it and/or modify it under the terms of the GNU General Public License
+     as published by the Free Software Foundation, either version 3 of the
+     License, or (at your option) any later version.
+     
+     Fox Sports Calendar Subcription is distributed in the hope that it will
+     be useful, but WITHOUT ANY WARRANTY; without even the implied warranty
+     of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+     GNU General Public License for more details.
+     
+     You should have received a copy of the GNU General Public License
+     along with Fox Sports Calendar Subcription.  If not,
+     see <http://www.gnu.org/licenses/>.
+     */
+    
     include_once('config.php');
     include_once('simple_html_dom.php');
     include_once('yourls.php');
@@ -10,10 +28,10 @@
     // Debugging options. I'm leaving these on by default currently as the script is still
     // in development, however at some point they'll need to get turned off so debugging
     // output doesn't show up in user's calendars.
-//    if ( $FSPC_DEBUG ) {
+    if ( $FSPC_DEBUG ) {
         error_reporting(E_ALL);
         ini_set('display_errors', '1');
-//    }
+    }
     
     // This checks the current "mode" we're using for the page.
     // Mode 0 - We prompt the user for their FSP calendar link
@@ -34,6 +52,7 @@
 
     function fspc_main() {
         global $FSPC_YOURLS_ENABLE;
+        global $FSPC_DEFAULT_TEAM_NAME;
         
         // If we're using anything other than mode 2, we need to display the HTML headers.
         if ( fspc_get_mode() != 2 ) {
@@ -226,7 +245,7 @@
             // club name listed on the club page. Generally at this point it means we've got a data
             // issue anyway, but we still want some data showing if possible.
             if ( $teamname == '' ) $teamname = fspc_fsp_get_club_name($sportID, $assocID, $clubID);
-            if ( $teamname == '' ) $teamname = 'FSP Team Calendar';
+            if ( $teamname == '' ) $teamname = $FSPC_DEFAULT_TEAM_NAME;
 
             // We check if we have any elements returned from the calendar. If we don't, then they've
             // probably moved onto their next season. We need to rerun our competition check in that
@@ -281,10 +300,15 @@
                     
                     if ( $complist != '' ) {
                         $complist = substr($complist, 0, strlen($complist) - 1);
-
-                        $gamedata = fspc_fsp_parse_calendar($timecheck, $complist, $teamname, $dstart, $dend,
-                                                            $sportID, $assocID, $clubID, $teamID, $gamelength);
                     }
+                }
+                
+                if ( $complist != '' ) {
+                    $teamname = '';
+                    $gamedata = fspc_fsp_parse_calendar($timecheck, $complist, $teamname, $dstart, $dend,
+                                                        $sportID, $assocID, $clubID, $teamID, $gamelength);
+                    if ( $teamname == '' ) $teamname = fspc_fsp_get_club_name($sportID, $assocID, $clubID);
+                    if ( $teamname == '' ) $teamname = $FSPC_DEFAULT_TEAM_NAME;
                 }
                 
                 // If we've actually got some gamedata now, we'll update the stored short URL
@@ -302,6 +326,7 @@
                     $url = str_replace('?t=1&', '?', $url);
                     $shorturl = fspc_yourls_get($url);
                     
+                    
                     $timezone = '';
                     if ( isset($_GET['tz']) ) $timezone = '&tz=' . $_GET['tz'];
                     $gamelength = '';
@@ -313,8 +338,8 @@
                     
                     // If the short URL didn't match anything then don't update it.
                     if ( $shorturl != '' ) fspc_yourls_update($shorturl, $fullurl, $teamname . ' (FSPC)');
-                    
-                    // Now we redirect to the new URL. We check if the t variable is set to facilitate
+                
+                    // Now we redirect to the new URL. We check if the text variable is set to facilitate
                     // testing and ensure debugging data still shows up.
                     if ( $text ) {
                         header('Location: ' . $fullurl . '&t=1');
