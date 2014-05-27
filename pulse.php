@@ -255,7 +255,10 @@
             // We check if we have any elements returned from the calendar. If we don't, then they've
             // probably moved onto their next season. We need to rerun our competition check in that
             // case and try again. This only works when we have a club ID.
-            if ( count($gamedata) == 0 || $inpast ) {
+            $checkpast = true;
+            if ( isset($_GET['s']) ) $checkpast = false;
+            
+            if ( count($gamedata) == 0 || ($inpast && $checkpast) ) {
                 // First, we'll check the club page to see if the team is listed there. If they
                 // are, we'll use that competition ID to determine the calendar events.
                 $complist = '';
@@ -347,9 +350,9 @@
                     // Now we redirect to the new URL. We check if the text variable is set to facilitate
                     // testing and ensure debugging data still shows up.
                     if ( $text ) {
-                        header('Location: ' . $fullurl . '&t=1');
+                        header('Location: ' . $fullurl . '&s=1&t=1');
                     } else {
-                        header('Location: ' . $fullurl);
+                        header('Location: ' . $fullurl . '&s=1');
                     }
                     
                     return;

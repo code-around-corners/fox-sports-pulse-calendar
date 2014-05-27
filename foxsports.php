@@ -46,9 +46,7 @@
     // 2 = The main competition page for an association. Used to get all the compID
     //     values for a specific association.
     // 3 = The ladder for a specific competition.
-    // 4 = The full fixture for a specific competition. Currently does not specify
-    //     the "pool" parameter, so will only return the main home and away season,
-    //     not finals data.
+    // 4 = The full fixture for a specific competition.
     //
     // Returns a URL as a string.
     
@@ -69,7 +67,7 @@
             $url = 'comp_info.cgi?c=' . $id . '&a=LADDER';
         } elseif ( $type == 4 ) {
             $id = '0-' . $assocID . '-0-' . $compID . '-0';
-            $url = 'comp_info.cgi?c=' . $id . '&a=ROUND&round=-1';
+            $url = 'comp_info.cgi?c=' . $id . '&a=ROUND&round=-1&pool=-1';
         }
         
         return ($FSPC_FSP_BASE_URL . $url);
@@ -126,14 +124,18 @@
     //
     // Returns an empty string if it can't find the name, or the club name if it can.
     function fspc_fsp_get_club_name($sportID, $assocID, $clubID) {
-        $url = fspc_fsp_gen_link($sportID, $assocID, $clubID, 0, 0, 1);
-        $html = file_get_html($url);
-        
-        $div = $html->find("div[class=historybar-left]", 0);
-        
-        $teamname = '';
-        if ( isset($div) ) {
-            $teamname = $div->find("a", 1)->plaintext;
+        if ( $clubID == '0' ) {
+            $teamname = '';
+        } else {
+            $url = fspc_fsp_gen_link($sportID, $assocID, $clubID, 0, 0, 1);
+            $html = file_get_html($url);
+            
+            $div = $html->find("div[class=historybar-left]", 0);
+            
+            $teamname = '';
+            if ( isset($div) ) {
+                $teamname = $div->find("a", 1)->plaintext;
+            }
         }
         
         return $teamname;
