@@ -224,6 +224,8 @@
     // clubID     - ID of the club (not essential, but helps)
     // teamID     - ID of the team (required)
     // gamelength - an integer representing the length of games in minutes (integer)
+    // &inpast    - an external boolean used to indicate if all the found events occur in the
+    //              past (designed to allow a recheck of the calendar if required)
     //
     // The date checks are used to strip events out outside of the date range.
     //
@@ -245,10 +247,11 @@
     // gameurl      - the FSP URL to the game statistics (string)
     
     function fspc_fsp_parse_calendar(&$timecheck, $complist, &$teamname, $dstart, $dend,
-                                     $sportID, $assocID, $clubID, $teamID, $gamelength) {
+                                     $sportID, $assocID, $clubID, $teamID, $gamelength, &$inpast) {
         $compID = explode("-", $complist);
         
         $gamedata = array();
+        $inpast = true;
         
         foreach($compID as $comp) {
             $teamurl = fspc_fsp_gen_link($sportID, $assocID, $clubID, $comp, $teamID, 1);
@@ -308,6 +311,7 @@
                     }
                     
                     $startdate = strtotime($strdate . ' ' . $strtime);
+                    if ( $startdate > strtotime("now") ) $inpast = false;
                     
                     if ( $allday == 0 ) {
                         if ( $gamelength != '' ) {

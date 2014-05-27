@@ -237,9 +237,14 @@
             // And we create some date variables.
             $dstart = strtotime($startdate);
             $dend = strtotime($enddate . ' + 1 day - 1 second');
-
+            
+            // This reference variable is used to check if all events occur in the past.
+            // If they do, we'll force an update of the competition ID list in case a
+            // team has been moved to a different divsion.
+            $inpast = false;
+            
             $gamedata = fspc_fsp_parse_calendar($timecheck, $complist, $teamname, $dstart, $dend,
-                                                $sportID, $assocID, $clubID, $teamID, $gamelength);
+                                                $sportID, $assocID, $clubID, $teamID, $gamelength, $inpast);
             
             // If at this point the team name is blank, and we have a club ID available, we'll check the
             // club name listed on the club page. Generally at this point it means we've got a data
@@ -250,7 +255,7 @@
             // We check if we have any elements returned from the calendar. If we don't, then they've
             // probably moved onto their next season. We need to rerun our competition check in that
             // case and try again. This only works when we have a club ID.
-            if ( count($gamedata) == 0 ) {
+            if ( count($gamedata) == 0 || $inpast ) {
                 // First, we'll check the club page to see if the team is listed there. If they
                 // are, we'll use that competition ID to determine the calendar events.
                 $complist = '';
@@ -306,7 +311,7 @@
                 if ( $complist != '' ) {
                     $teamname = '';
                     $gamedata = fspc_fsp_parse_calendar($timecheck, $complist, $teamname, $dstart, $dend,
-                                                        $sportID, $assocID, $clubID, $teamID, $gamelength);
+                                                        $sportID, $assocID, $clubID, $teamID, $gamelength, $inpast);
                     if ( $teamname == '' ) $teamname = fspc_fsp_get_club_name($sportID, $assocID, $clubID);
                     if ( $teamname == '' ) $teamname = $FSPC_DEFAULT_TEAM_NAME;
                 }
