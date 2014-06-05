@@ -339,10 +339,18 @@
                     if ( isset($_GET['tz']) ) $timezone = '&tz=' . $_GET['tz'];
                     $gamelength = '';
                     if ( isset($_GET['gl']) ) $gamelength = '&gl=' . $_GET['gl'];
+                    $extics = '';
+                    if ( isset($_GET['ics']) ) $extics = '&ics=' . $_GET['ics'];
+                    $clashmode = '';
+                    if ( isset($_GET['cl']) ) $clashmode = '&cl=' . $_GET['cl'];
+                    $startdate = '';
+                    if ( isset($_GET['sd']) ) $startdate = '&sd=' . $_GET['sd'];
+                    $enddate = '';
+                    if ( isset($_GET['ed']) ) $enddate = '&ed=' . $_GET['ed'];
                     
                     $baseurl = 'http://' . $_SERVER['HTTP_HOST'] . $_SERVER['SCRIPT_NAME'];
                     $fullurl = $baseurl . '?assoc=' . $assocID . '&club=' . $clubID . '&team=' . $teamID . '&comps=' . $complist;
-                    $fullurl .= $timezone . $gamelength;
+                    $fullurl .= $timezone . $gamelength . $extics . $clashmode . $startdate . $enddate;
                     
                     // If the short URL didn't match anything then don't update it.
                     if ( $shorturl != '' ) fspc_yourls_update($shorturl, $fullurl, $teamname . ' (FSPC)');
