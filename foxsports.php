@@ -162,6 +162,7 @@
         $teamname = preg_replace('/[^A-Za-z0-9 ]*/i', '', $teamname);
         $teamname = preg_replace('/^ */i', '', $teamname);
         $teamname = preg_replace('/ *$/i', '', $teamname);
+	$teamname = preg_replace('/  */i', ' ', $teamname);
         
         return $teamname;
     }
