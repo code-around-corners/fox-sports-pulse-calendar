@@ -258,7 +258,7 @@
             $checkpast = true;
             if ( isset($_GET['s']) ) $checkpast = false;
             
-            if ( count($gamedata) == 0 || ($inpast && $checkpast) ) {
+            if ( ( count($gamedata) == 0 || ($inpast && $checkpast) ) && $teamID > 0 ) {
                 // First, we'll check the club page to see if the team is listed there. If they
                 // are, we'll use that competition ID to determine the calendar events.
                 $complist = '';

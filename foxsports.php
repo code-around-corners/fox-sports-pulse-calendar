@@ -256,6 +256,11 @@
         $gamedata = array();
         $inpast = true;
         
+	// If the team ID is zero, we just return an empty array. This allows a URL to have
+	// a placeholder value in the event that the external calendars are ready but the
+	// FSP calendar isn't ready.
+	if ( $teamID == 0 ) return $gamedata;
+
         foreach($compID as $comp) {
             $teamurl = fspc_fsp_gen_link($sportID, $assocID, $clubID, $comp, $teamID, 1);
             $teamhtml = file_get_html($teamurl);
