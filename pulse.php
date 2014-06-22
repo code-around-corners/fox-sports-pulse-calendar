@@ -351,7 +351,7 @@
                     
                     $baseurl = 'http://' . $_SERVER['HTTP_HOST'] . $_SERVER['SCRIPT_NAME'];
                     $fullurl = $baseurl . '?assoc=' . $assocID . '&club=' . $clubID . '&team=' . $teamID . '&comps=' . $complist;
-                    $fullurl .= $timezone . $gamelength . $extics . $clashmode . $startdate . $enddate;
+                    $fullurl .= $timezone . $gamelength . $extics . $clashmode . $startdate . $enddate . $seed;
                     
                     // If the short URL didn't match anything then don't update it.
                     if ( $shorturl != '' ) fspc_yourls_update($shorturl, $fullurl, $teamname . ' (FSPC)');
