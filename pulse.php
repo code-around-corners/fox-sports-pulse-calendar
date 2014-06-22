@@ -334,7 +334,6 @@
                     $url = str_replace('?t=1&', '?', $url);
                     $shorturl = fspc_yourls_get($url);
                     
-                    
                     $timezone = '';
                     if ( isset($_GET['tz']) ) $timezone = '&tz=' . $_GET['tz'];
                     $gamelength = '';
@@ -347,6 +346,8 @@
                     if ( isset($_GET['sd']) ) $startdate = '&sd=' . $_GET['sd'];
                     $enddate = '';
                     if ( isset($_GET['ed']) ) $enddate = '&ed=' . $_GET['ed'];
+                    $seed = '';
+                    if ( isset($_GET['seed']) ) $seed = '&seed=' . $_GET['seed'];
                     
                     $baseurl = 'http://' . $_SERVER['HTTP_HOST'] . $_SERVER['SCRIPT_NAME'];
                     $fullurl = $baseurl . '?assoc=' . $assocID . '&club=' . $clubID . '&team=' . $teamID . '&comps=' . $complist;
