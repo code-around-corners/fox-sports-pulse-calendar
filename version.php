@@ -20,23 +20,18 @@
     
     $FSPC_MAJOR_VERSION = 1;
     $FSPC_MINOR_VERSION = 3;
-    $FSPC_REVISION = 1;
     
     // This function returns the version number. If a git branch is found,
     // we'll also pull in the last git commit ID.
     function fspc_version() {
         global $FSPC_MAJOR_VERSION;
         global $FSPC_MINOR_VERSION;
-        global $FSPC_REVISION;
 
         $major = $FSPC_MAJOR_VERSION;
         $minor = '00' . $FSPC_MINOR_VERSION;
-        $revision = '0000' . $FSPC_REVISION;
-        
         $minor = substr($minor, -2, 2);
-        $revision = substr($revision, -4, 4);
        
-        $version = $major . '.' . $minor . '.' . $revision;
+        $version = $major . '.' . $minor;
  
         if ( ($git = file_get_contents('.git/HEAD')) !== false ) {
             $file = substr($git, 5, strlen($git) - 6);
