@@ -58,7 +58,7 @@
             $url = 'club_info.cgi?c=' . $id . '&a=TEAMS';
         } elseif ( $type == 1 ) {
             $id = '0-' . $assocID . '-' . $clubID . '-' . $compID . '-' . $teamID;
-            $url = 'team_info.cgi?c=' . $id;
+            $url = 'team_info.cgi?c=' . $id . '&a=SFIX';
         } elseif ( $type == 2 ) {
             $id = '0-' . $assocID . '-0-0-0';
             $url = 'assoc_page.cgi?c=' . $id . '&a=COMPS';
@@ -69,7 +69,7 @@
             $id = '0-' . $assocID . '-0-' . $compID . '-0';
             $url = 'comp_info.cgi?c=' . $id . '&a=ROUND&round=-1&pool=-1';
         }
-        
+
         return ($FSPC_FSP_BASE_URL . $url);
     }
     
