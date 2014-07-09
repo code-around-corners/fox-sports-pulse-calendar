@@ -77,18 +77,9 @@ ask them for help with it.
 guarantee I can fix your particular problem, use the Tweet button above if you're having
 problems getting your calendar.
 </li>
-<li>You need to specify how long your games run for in minutes. Fox Sport Pulse only
-lists start times. If you leave this out, it will default to 45 minutes.
-</li>
 <li>You can select the time zone you want events to show up in using the drop down box
 below. This list can be expanded if required, please use the Tweet button if you want
-to request an additional time zone be added. Calendars created before this feature
-was added will default to Melbourne time.
-</li>
-<li>The tool interrogates the club's team page to determine if a team has moved divisions
-to ensure all the games in the current season are captured. However it does this when you
-create the link, so if your team gets moved, come back here and generate a new calendar
-link.
+to request an additional time zone be added.
 </li>
 </ul>
 
@@ -185,9 +176,8 @@ page instead to get a link with all the necessary info.
 </ul>
 
 <p>
-Any fields above showing as zero are fields that were missing. This page is going to be
-updated in the future to try and determine this information directly from the team page,
-but until then, please try a different link.
+Any fields above showing as zero are fields that were missing. In the meantime, please
+try a different link.
 </p>
 <?php
     }
