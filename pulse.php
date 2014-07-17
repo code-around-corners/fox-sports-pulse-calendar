@@ -144,7 +144,7 @@
                     if ( $gamelength == '' ) $gamelength = 0;
 
                     // Now we generate the full URL that we'll eventually shorten that links to the calendar.
-                    $baseurl = $_SERVER[HTTP_HOST] . $_SERVER[REQUEST_URI];
+                    $baseurl = $_SERVER["HTTP_HOST"] . $_SERVER["REQUEST_URI"];
                     $fullurl = $baseurl . '?assoc=' . $assocID . '&club=' . $clubID . '&team=' . $teamID . '&comps=' . $complist . '&tz=';
                     $fullurl .= $_POST['tz'] . '&gl=' . $gamelength;
 

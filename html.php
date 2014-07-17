@@ -105,7 +105,7 @@ event times, you can combine those into the Fox Sports Pulse calendar to have ev
 for your sports team in one place.
 </p>
 
-<form id="fspc_form" action="<?php echo basename(__FILE__); ?>" method="post">
+<form id="fspc_form" action="pulse.php" method="post">
 <p>
 Enter a Fox Sports Pulse website:<br />
 <input name="url" type="text" style="width: 100%;" />
