@@ -400,6 +400,9 @@
             } else if ( strpos($location, 'Epping Leisure Centre') !== false ) {
                 $court = substr($location, strlen($location) - 2, 2);
                 $location = 'Epping Leisure Centre (Court ' . $court . '), 41-53 Miller Rd, Epping, VIC, 3076';
+            } else if ( strpos($location, 'Darebin Community Sports Stadium') !== false ) {
+                $court = preg_replace('/[^0-9]/i', '', substr($location, strlen($location) - 2, 2));
+                $location = 'Darebin Community Sports Stadium (Court ' . $court . '), 857 Plenty Rd, Reservoir, VIC, 3073';
             }
         }
         
