@@ -33,7 +33,7 @@
 
 body {
    font-family:     Verdana, "DejaVu Sans", "Bitstream Vera Sans", "Lucida Sans", Arial, Helvetica, sans-serif;
-   font-size:       90%;	/* Allow IE/Win to resize the document */
+   font-size:       80%;	/* Allow IE/Win to resize the document */
    color:           black;
    background:      #F0F0F0;
    margin:          20;

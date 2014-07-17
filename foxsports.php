@@ -181,13 +181,30 @@
         $html = file_get_html($url);
         $complist = '';
         
-        foreach($html->find('table[class=tableClass]') as $comps) {
-            foreach($comps->find('td[class=flr-list-nav]') as $comp) {
-                $compurl = $FSPC_FSP_BASE_URL . str_replace('&amp;', '&', $comp->find('a', 0)->href);
-                $compdata = parse_url($compurl, PHP_URL_QUERY);
-                parse_str($compdata, $cparams);
+        $seasonlist = '0';
+        $seasons = $html->find('select[id=complist_seasonID]', 0);
+        
+        if ( $seasons ) {
+            foreach($seasons->find('option') as $season) {
+                $seasonlist .= '-' . $season->value;
+            }
+        }
+        
+        $seasonids = explode('-', $seasonlist);
+        
+        foreach($seasonids as $seasonid) {
+            if ( $seasonid != '0' && sizeof($seasonids) > 1 ) {
+                $html = file_get_html($url . '&seasonID=' . $seasonid);
+            }
+            
+            foreach($html->find('table[class=tableClass]') as $comps) {
+                foreach($comps->find('td[class=flr-list-nav]') as $comp) {
+                    $compurl = $FSPC_FSP_BASE_URL . str_replace('&amp;', '&', $comp->find('a', 0)->href);
+                    $compdata = parse_url($compurl, PHP_URL_QUERY);
+                    parse_str($compdata, $cparams);
                 
-                $complist = $complist . $cparams['compID'] . '-';
+                    $complist = $complist . $cparams['compID'] . '-';
+                }
             }
         }
         
@@ -256,10 +273,10 @@
         $gamedata = array();
         $inpast = true;
         
-	// If the team ID is zero, we just return an empty array. This allows a URL to have
-	// a placeholder value in the event that the external calendars are ready but the
-	// FSP calendar isn't ready.
-	if ( $teamID == 0 ) return $gamedata;
+    // If the team ID is zero, we just return an empty array. This allows a URL to have
+    // a placeholder value in the event that the external calendars are ready but the
+    // FSP calendar isn't ready.
+    if ( $teamID == 0 ) return $gamedata;
 
         foreach($compID as $comp) {
             $teamurl = fspc_fsp_gen_link($sportID, $assocID, $clubID, $comp, $teamID, 1);
