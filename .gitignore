@@ -1,3 +1,4 @@
 config.php
 fspc-xcode.xcworkspace
 .DS_Store
+error_log
