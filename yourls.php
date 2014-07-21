@@ -39,7 +39,7 @@
         if ( $url != '' )      $yurl .= '&url=' . urlencode($url);
         if ( $shorturl != '' ) $yurl .= '&shorturl=' . $shorturl;
         if ( $title != '' )    $yurl .= '&title=' . urlencode($title);
-        
+
         // Finally we return a DOM object with the result.
         return file_get_html($yurl);
     }
@@ -71,5 +71,11 @@
         $yourls = fspc_yourls_api('update', $url, $shorturl, $title);
         return;
     }
-    
+   
+    // This wrapper function will return the full URL of a keyword using the YOURLS
+    // API rather than the build_url function.
+    function fspc_yourls_expand($shorturl) {
+        $yourls = fspc_yourls_api('expand', NULL, $shorturl, NULL);
+        return $yourls->find('longurl', 0)->plaintext;
+    } 
 ?>

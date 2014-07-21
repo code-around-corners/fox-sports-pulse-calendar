@@ -332,8 +332,14 @@
 
                     $url = str_replace('&t=1', '', $url);
                     $url = str_replace('?t=1&', '?', $url);
+
+                    if ( strpos($url, '&seed=') !== false ) {
+                        $url = substr($url, 0, strpos($url, '&seed='));
+                    }
+
+                    $url = str_replace('%2F', '/', $url);
                     $shorturl = fspc_yourls_get($url);
-                    
+
                     $timezone = '';
                     if ( isset($_GET['tz']) ) $timezone = '&tz=' . $_GET['tz'];
                     $gamelength = '';

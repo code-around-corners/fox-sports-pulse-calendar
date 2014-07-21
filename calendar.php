@@ -40,7 +40,7 @@
         global $FSPC_YOURLS_ENABLE;
         
         // First we need to get the full URL.
-        if ( $FSPC_YOURLS_ENABLE ) $url = fspc_yourls_build_url($url);
+        if ( $FSPC_YOURLS_ENABLE ) $url = fspc_yourls_expand($url);
         
         // Now we pull down the calendar. We expand it based on the \n character, but we
         // also strip out \r characters. This allows for calendars that don't use \r\n
