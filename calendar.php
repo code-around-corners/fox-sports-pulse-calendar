@@ -46,6 +46,11 @@
         // also strip out \r characters. This allows for calendars that don't use \r\n
         // for the end of line (technically against spec, but generally still works).
         $html = file_get_contents($url);
+
+        if ( substr($html, 0, 2) == "\x1f\x8b" ) {
+            $html = gzdecode($html);
+        }
+
         $lines = explode("\n", str_replace("\r", "", $html));
         
         $intz = 0;
@@ -143,10 +148,6 @@
             header("Content-Type: text/plain");
         } else {
             header('Content-type: text/calendar; charset=utf-8');
-            header('Content-Disposition: attachment; filename="' . $teamname . '.ics"');
-            header("Cache-Control: no-store, no-cache, must-revalidate");
-            header("Cache-Control: post-check=0, pre-check=0", false);
-            header("Pragma: no-cache");
         }
         
         // As a precaution, we strip out any periods in the timezone. It shouldn't need them regardless,

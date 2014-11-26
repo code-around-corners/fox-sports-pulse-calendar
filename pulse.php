@@ -168,20 +168,32 @@
                                 // some strange issue I haven't been able to solve yet, we add back the
                                 // http:// part of the URL.
                                 $icsurl = 'http://' . $_POST['ics' . $x];
-                                $icshtml = file_get_html($icsurl);
+                                $icshtml = file_get_contents($icsurl);
+                                
+                                if ( substr($icshtml, 0, 2) == "\x1f\x8b" ) {
+                                    $icshtml = gzdecode($icshtml);
+                                }
+
+                                $icshtml = str_get_html($icshtml);
         
                                 // If we don't find a valid iCal header, we try instead using the https://
                                 // protocol. Most calendars don't usually use HTTPS but just in case it does,
                                 // we check for that too.
                                 if ( strpos($icshtml->plaintext, 'BEGIN:VCALENDAR') === false ) {
                                     $icsurl = 'https://' . $_POST['ics' . $x];
-                                    $icshtml = file_get_html($icsurl);
+                                    $icssrc = file_get_contents($icsurl);
+
+                                    if ( substr($icshtml, 0, 2) == "\x1f\x8b" ) {
+                                        $icshtml = gzdecode($icshtml);
+                                    }
+
+                                    $icshtml = str_get_html($icshtml);
                                 }
                             
                                 // If we discover an iCal header in the passed URL, we assume that this is a
                                 // valid calendar.
                                 if ( strpos($icshtml->plaintext, 'BEGIN:VCALENDAR') !== false ) {
-                                    $shortics = fspc_yourls_shorten($icsurl);	
+                                    $shortics = fspc_yourls_shorten($icsurl);   
                                     $shorticsid .= $shortics . '-';
                                 }
                             }
