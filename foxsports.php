@@ -404,6 +404,9 @@
             } else if ( strpos($location, 'Darebin Community Sports Stadium') !== false ) {
                 $court = preg_replace('/[^0-9]/i', '', substr($location, strlen($location) - 2, 2));
                 $location = 'Darebin Community Sports Stadium (Court ' . $court . '), 857 Plenty Rd, Reservoir, VIC, 3073';
+            } else if ( strpos($location, 'Keon Park Youth Club') !== false ) {
+                $court = 14;
+                $location = 'Keon Park Youth Club (Court ' . $court . '), Dole Avenue, Reservoir, VIC, 3073';
             }
         }
         
