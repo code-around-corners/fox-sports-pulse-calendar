@@ -247,7 +247,7 @@
             
             // And we do the same for the start offset.
             $startoffset = '';
-            if ( isset($_GET['gl']) ) $startoffset = preg_replace('/[^0-9]*/', '', $_GET['so']);
+            if ( isset($_GET['so']) ) $startoffset = preg_replace('/[^0-9]*/', '', $_GET['so']);
             if ( $startoffset == '' ) $startoffset = 0;
 
             // And also our text variable for debugging.
@@ -333,7 +333,7 @@
                 
                 if ( $complist != '' ) {
                     $teamname = '';
-                    $gamedata = fspc_fsp_parse_calendar($timecheck, $complist, $teamname, $dstart, $dend,
+                    $gamedata = fspc_fsp_parse_calendar($timecheck, $complist, $teamname, $dstart, $dend, $startoffset,
                                                         $sportID, $assocID, $clubID, $teamID, $gamelength, $inpast);
                     if ( $teamname == '' ) $teamname = fspc_fsp_get_club_name($sportID, $assocID, $clubID);
                     if ( $teamname == '' ) $teamname = $FSPC_DEFAULT_TEAM_NAME;
@@ -360,6 +360,8 @@
                     if ( isset($_GET['tz']) ) $timezone = '&tz=' . $_GET['tz'];
                     $gamelength = '';
                     if ( isset($_GET['gl']) ) $gamelength = '&gl=' . $_GET['gl'];
+                    $startoffset = '';
+                    if ( isset($_GET['so']) ) $gamelength = '&so=' . $_GET['so'];
                     $extics = '';
                     if ( isset($_GET['ics']) ) $extics = '&ics=' . $_GET['ics'];
                     $clashmode = '';
