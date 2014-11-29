@@ -128,6 +128,23 @@ Select a time zone for the calendar:<br />
 Enter how long your games run for in minutes:<br />
 <input name="gl" type="text" maxlength="3" value="45" size="3" />
 </p>
+
+<p>
+Would you like to show games as starting early? This is really handy if you have problems
+getting people to your games on time! Select how many minutes early you want games to
+start from (15 minutes for example would mean a 1:00pm event should show as starting at
+12:45pm). This only applies to your Fox Sport Pulse times, not your external calendars.<br />
+<select name="so">
+<option value="0" selected>Start on time</option>
+<option value="5">5 minutes early</option>
+<option value="10">10 minutes early</option>
+<option value="15">15 minutes early</option>
+<option value="20">20 minutes early</option>
+<option value="25">25 minutes early</option>
+<option value="30">30 minutes early</option>
+</select>
+</p>
+
 <?php
         if ( $FSPC_YOURLS_ENABLE ) {
 ?>

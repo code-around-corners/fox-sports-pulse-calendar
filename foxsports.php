@@ -230,21 +230,22 @@
     // This function parses a fixture and returns an array of data for that fixture than can be
     // parsed for a calendar.
     //
-    // &timecheck - an external array that uses the start time of an event as an index to
-    //              indicate an event is happening at that time. Used to assist with conflicts
-    //              on the calendar.
-    // complist   - a dash delimited list of competition IDs to include in the calendar
-    // &teamname  - a string variable to store the team name; since we have to parse fixture
-    //              data anyway, this is done as a performance tweak, since we can grab the
-    //              team name at the same time for virtually no cost
-    // dstart     - yyyy-mm-dd date format to indicate the starting date for events
-    // dend       - yyyy-mm-dd date format to indicate the ending date for events
-    // sportID    - the sport ID (or zero)
-    // assocID    - ID of the association
-    // clubID     - ID of the club (not essential, but helps)
-    // teamID     - ID of the team (required)
-    // gamelength - an integer representing the length of games in minutes (integer)
-    // &inpast    - an external boolean used to indicate if all the found events occur in the
+    // &timecheck  - an external array that uses the start time of an event as an index to
+    //               indicate an event is happening at that time. Used to assist with conflicts
+    //               on the calendar.
+    // complist    - a dash delimited list of competition IDs to include in the calendar
+    // &teamname   - a string variable to store the team name; since we have to parse fixture
+    //               data anyway, this is done as a performance tweak, since we can grab the
+    //               team name at the same time for virtually no cost
+    // dstart      - yyyy-mm-dd date format to indicate the starting date for events
+    // dend        - yyyy-mm-dd date format to indicate the ending date for events
+    // startoffset - an integer indicating the number of minutes to subtract from start times
+    // sportID     - the sport ID (or zero)
+    // assocID     - ID of the association
+    // clubID      - ID of the club (not essential, but helps)
+    // teamID      - ID of the team (required)
+    // gamelength  - an integer representing the length of games in minutes (integer)
+    // &inpast     - an external boolean used to indicate if all the found events occur in the
     //              past (designed to allow a recheck of the calendar if required)
     //
     // The date checks are used to strip events out outside of the date range.
@@ -266,7 +267,7 @@
     // scoreagainst - formatted score for the opposition team (string)
     // gameurl      - the FSP URL to the game statistics (string)
     
-    function fspc_fsp_parse_calendar(&$timecheck, $complist, &$teamname, $dstart, $dend,
+    function fspc_fsp_parse_calendar(&$timecheck, $complist, &$teamname, $dstart, $dend, $startoffset,
                                      $sportID, $assocID, $clubID, $teamID, $gamelength, &$inpast) {
         $compID = explode("-", $complist);
         
@@ -335,7 +336,7 @@
                         $strtime = substr($rawtime, 0, 2) . ':' . substr($rawtime, 3, 2) . ':00';
                     }
                     
-                    $startdate = strtotime($strdate . ' ' . $strtime);
+                    $startdate = strtotime($strdate . ' ' . $strtime . ' - ' . $startoffset . ' minutes');
                     if ( $startdate > strtotime("now") ) $inpast = false;
                     
                     if ( $allday == 0 ) {
