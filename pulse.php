@@ -143,10 +143,13 @@
                     $gamelength = preg_replace('/[^0-9]/i', '', $_POST['gl']);
                     if ( $gamelength == '' ) $gamelength = 0;
 
+                    $startoffset = preg_replace('/[^0-9]/i', '', $_POST['so']);
+                    if ( $startoffset == '' ) $startoffset = 0;
+
                     // Now we generate the full URL that we'll eventually shorten that links to the calendar.
                     $baseurl = $_SERVER["HTTP_HOST"] . $_SERVER["REQUEST_URI"];
                     $fullurl = $baseurl . '?assoc=' . $assocID . '&club=' . $clubID . '&team=' . $teamID . '&comps=' . $complist . '&tz=';
-                    $fullurl .= $_POST['tz'] . '&gl=' . $gamelength;
+                    $fullurl .= $_POST['tz'] . '&gl=' . $gamelength . '&so=' . $startoffset;
 
                     // We'll grab the first team competition page to get the full team name.
                     $compID = explode('-', $complist);
@@ -232,7 +235,7 @@
             // Default start and end ranges if they're not specified.
             $startdate = '1900-01-01';
             $enddate = '2099-01-01';
-        
+
             // Now we grab the ranges from the URL if they exist.
             if ( isset($_GET['sd']) ) $startdate = $_GET['sd'];
             if ( isset($_GET['ed']) ) $enddate = $_GET['ed'];
@@ -242,6 +245,11 @@
             if ( isset($_GET['gl']) ) $gamelength = preg_replace('/[^0-9]*/', '', $_GET['gl']);
             if ( $gamelength == '' ) $gamelength = 45;
             
+            // And we do the same for the start offset.
+            $startoffset = '';
+            if ( isset($_GET['so']) ) $startoffset = preg_replace('/[^0-9]*/', '', $_GET['so']);
+            if ( $startoffset == '' ) $startoffset = 0;
+
             // And also our text variable for debugging.
             $text = false;
             if ( isset($_GET['t']) ) $text = true;
@@ -255,7 +263,7 @@
             // team has been moved to a different divsion.
             $inpast = false;
             
-            $gamedata = fspc_fsp_parse_calendar($timecheck, $complist, $teamname, $dstart, $dend,
+            $gamedata = fspc_fsp_parse_calendar($timecheck, $complist, $teamname, $dstart, $dend, $startoffset,
                                                 $sportID, $assocID, $clubID, $teamID, $gamelength, $inpast);
             
             // If at this point the team name is blank, and we have a club ID available, we'll check the
@@ -325,7 +333,7 @@
                 
                 if ( $complist != '' ) {
                     $teamname = '';
-                    $gamedata = fspc_fsp_parse_calendar($timecheck, $complist, $teamname, $dstart, $dend,
+                    $gamedata = fspc_fsp_parse_calendar($timecheck, $complist, $teamname, $dstart, $dend, $startoffset,
                                                         $sportID, $assocID, $clubID, $teamID, $gamelength, $inpast);
                     if ( $teamname == '' ) $teamname = fspc_fsp_get_club_name($sportID, $assocID, $clubID);
                     if ( $teamname == '' ) $teamname = $FSPC_DEFAULT_TEAM_NAME;
@@ -352,6 +360,8 @@
                     if ( isset($_GET['tz']) ) $timezone = '&tz=' . $_GET['tz'];
                     $gamelength = '';
                     if ( isset($_GET['gl']) ) $gamelength = '&gl=' . $_GET['gl'];
+                    $startoffset = '';
+                    if ( isset($_GET['so']) ) $gamelength = '&so=' . $_GET['so'];
                     $extics = '';
                     if ( isset($_GET['ics']) ) $extics = '&ics=' . $_GET['ics'];
                     $clashmode = '';

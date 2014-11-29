@@ -19,7 +19,7 @@
      */
     
     $FSPC_MAJOR_VERSION = 1;
-    $FSPC_MINOR_VERSION = 3;
+    $FSPC_MINOR_VERSION = 4;
     
     // This function returns the version number. If a git branch is found,
     // we'll also pull in the last git commit ID.
