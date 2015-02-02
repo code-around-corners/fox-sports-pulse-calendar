@@ -184,7 +184,7 @@
                                 // we check for that too.
                                 if ( strpos($icshtml->plaintext, 'BEGIN:VCALENDAR') === false ) {
                                     $icsurl = 'https://' . $_POST['ics' . $x];
-                                    $icssrc = file_get_contents($icsurl);
+                                    $icshtml = file_get_contents($icsurl);
 
                                     if ( substr($icshtml, 0, 2) == "\x1f\x8b" ) {
                                         $icshtml = gzdecode($icshtml);
@@ -196,7 +196,7 @@
                                 // If we discover an iCal header in the passed URL, we assume that this is a
                                 // valid calendar.
                                 if ( strpos($icshtml->plaintext, 'BEGIN:VCALENDAR') !== false ) {
-                                    $shortics = fspc_yourls_shorten($icsurl);   
+                                    $shortics = fspc_yourls_shorten($icsurl, '', true);   
                                     $shorticsid .= $shortics . '-';
                                 }
                             }

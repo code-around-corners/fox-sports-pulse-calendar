@@ -54,9 +54,14 @@
     
     // This wrapper function will shorten a URL and return the short code, including the
     // YOURLS URL.
-    function fspc_yourls_shorten($url, $title = '') {
+    function fspc_yourls_shorten($url, $title = '', $retkey = false) {
         $yourls = fspc_yourls_api('shorturl', $url, NULL, $title);
-        return $yourls->find('shorturl', 0)->plaintext;
+
+        if ( $retkey ) {
+            return $yourls->find('keyword', 0)->plaintext;
+        } else {
+            return $yourls->find('shorturl', 0)->plaintext;
+        }
     }
     
     // This wrapper function will return a short code only if it exists for the specified URL.
