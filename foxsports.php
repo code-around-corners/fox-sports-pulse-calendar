@@ -1,30 +1,30 @@
 <?php
-    
+
     /*
      This file is part of Fox Sports Calendar Subcription.
-     
+
      Fox Sports Calendar Subcription is free software: you can redistribute
      it and/or modify it under the terms of the GNU General Public License
      as published by the Free Software Foundation, either version 3 of the
      License, or (at your option) any later version.
-     
+
      Fox Sports Calendar Subcription is distributed in the hope that it will
      be useful, but WITHOUT ANY WARRANTY; without even the implied warranty
      of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
      GNU General Public License for more details.
-     
+
      You should have received a copy of the GNU General Public License
      along with Fox Sports Calendar Subcription.  If not,
      see <http://www.gnu.org/licenses/>.
      */
 
     include_once("simple_html_dom.php");
-    
+
     // Theoretically this should be a constant, however I've added it as a variable
     // since previously the URL was http://www.sportingpulse.com/. In case it
     // changes again, we can update it in a single location.
     $FSPC_FSP_BASE_URL = 'http://www.foxsportspulse.com/';
-    
+
     // This function accepts a number of different parameters and will return the
     // URL on Fox Sports Pulse for the requested data.
     //
@@ -49,10 +49,10 @@
     // 4 = The full fixture for a specific competition.
     //
     // Returns a URL as a string.
-    
+
     function fspc_fsp_gen_link($sportID, $assocID, $clubID, $compID, $teamID, $type) {
         global $FSPC_FSP_BASE_URL;
-        
+
         if ( $type == 0 ) {
             $id = '0-' . $assocID . '-' . $clubID . '-0-0';
             $url = 'club_info.cgi?c=' . $id . '&a=TEAMS';
@@ -72,22 +72,22 @@
 
         return ($FSPC_FSP_BASE_URL . $url);
     }
-    
+
     // This function checks the passed URL for the presence of a club ID parameter so if the
     // original URL did not contain one, it can still be extracted for competition details.
     // We don't bother building a full DOM object here, we can just parse the raw HTML.
     //
     // Returns the club ID if found, or a zero if it doesn't.
     function fspc_fsp_get_clubid($url) {
-        $findclubid = file_get_contents($url);
-        
+        $findclubid = fspc_cache_file_get($url, FSPC_GET_CONTENTS, FSPC_DEFAULT_CACHE_TIME, 'fsp');
+
         if ( preg_match('/clubID=[0-9]*/i', $findclubid, $matched) == 1 ) {
             return substr($matched[0], 7, strlen($matched[0]) - 7);
         } else {
             return 0;
         }
     }
-    
+
     // This will grab all the competition IDs for a specified team. As FSP only shows active
     // competitions, this means that if you run the same URL through this in two different
     // seasons, you'll get two different IDs. This is expected behaviour.
@@ -96,29 +96,29 @@
     // if matches are found.
     function fspc_fsp_get_comps($sportID, $assocID, $clubID, $teamID) {
         $cluburl = fspc_fsp_gen_link($sportID, $assocID, $clubID, 0, 0, 0);
-        $clubhtml = file_get_html($cluburl);
+        $clubhtml = fspc_cache_file_get($cluburl, FSPC_GET_HTML, FSPC_DEFAULT_CACHE_TIME, 'fsp');
         $elem = $clubhtml->find('div[class=club-team-list]', 0);
-        
+
         $complist = '';
-        
+
         if ( isset($elem) ) {
             foreach($elem->find('div[class=club-team-row]') as $teamrow) {
                 $teamurl = str_replace('&amp;', '&', $teamrow->find('h3', 0)->find('a', 0)->href);
                 $teamdata = parse_url($teamurl, PHP_URL_QUERY);
                 parse_str($teamdata, $tparams);
-                
+
                 if ( $tparams['id'] == $teamID ) $complist = $complist . $tparams['compID'] . '-';
             }
-            
+
             // We trim the last "-" character off our competition list.
             if ( $complist != '' ) {
                 $complist = substr($complist, 0, strlen($complist) - 1);
             }
         }
-        
+
         return $complist;
     }
-    
+
     // This function looks up the name of the specified club. Useful when you can't get
     // specific details on the team for various reasons.
     //
@@ -128,19 +128,19 @@
             $teamname = '';
         } else {
             $url = fspc_fsp_gen_link($sportID, $assocID, $clubID, 0, 0, 1);
-            $html = file_get_html($url);
-            
+            $html = fspc_cache_file_get($url, FSPC_GET_HTML, FSPC_DEFAULT_CACHE_TIME, 'fsp');
+
             $div = $html->find("div[class=historybar-left]", 0);
-            
+
             $teamname = '';
             if ( isset($div) ) {
                 $teamname = $div->find("a", 1)->plaintext;
             }
         }
-        
+
         return $teamname;
     }
-    
+
     // This will look up the team page and extract the team name. You need all the
     // details for this one, as we're looking for a specific team in a specific comp.
     // We also strip out certain characters to avoid additional formatting.
@@ -148,8 +148,8 @@
     // Returns the team name as a string if found, or a blank string if it's not.
     function fspc_fsp_get_team_name($sportID, $assocID, $clubID, $compID, $teamID) {
         $url = fspc_fsp_gen_link($sportID, $assocID, $clubID, $compID, $teamID, 1);
-        $teamhtml = file_get_html($url);
-        
+        $teamhtml = fspc_cache_file_get($url, FSPC_GET_HTML, FSPC_DEFAULT_CACHE_TIME, 'fsp');
+
         return fspc_fsp_get_team_name_from_html($teamhtml);
     }
 
@@ -163,10 +163,10 @@
         $teamname = preg_replace('/^ */i', '', $teamname);
         $teamname = preg_replace('/ *$/i', '', $teamname);
         $teamname = preg_replace('/  */i', ' ', $teamname);
-        
+
         return $teamname;
     }
-    
+
     // This function will grab all the competitions associated with the selected association.
     // This can be used when you're dealing with teams not properly associated with clubs to
     // try and find which competition they're currently assigned to. Should not be used as
@@ -178,55 +178,55 @@
         global $FSPC_FSP_BASE_URL;
 
         $url = fspc_fsp_gen_link($sportID, $assocID, 0, 0, 0, 2);
-        $html = file_get_html($url);
+        $html = fspc_cache_file_get($url, FSPC_GET_HTML, FSPC_DEFAULT_CACHE_TIME, 'fsp');
         $complist = '';
-        
+
         $seasonlist = '0';
         $seasons = $html->find('select[id=complist_seasonID]', 0);
-        
+
         if ( $seasons ) {
             foreach($seasons->find('option') as $season) {
                 $seasonlist .= '-' . $season->value;
             }
         }
-        
+
         $seasonids = explode('-', $seasonlist);
-        
+
         foreach($seasonids as $seasonid) {
             if ( $seasonid != '0' && sizeof($seasonids) > 1 ) {
-                $html = file_get_html($url . '&seasonID=' . $seasonid);
+                $html = fspc_cache_file_get($url . '&seasonID=' . $seasonid, FSPC_GET_HTML, FSPC_DEFAULT_CACHE_TIME, 'fsp');
             }
-            
+
             foreach($html->find('table[class=tableClass]') as $comps) {
                 foreach($comps->find('td[class=flr-list-nav]') as $comp) {
                     $compurl = $FSPC_FSP_BASE_URL . str_replace('&amp;', '&', $comp->find('a', 0)->href);
                     $compdata = parse_url($compurl, PHP_URL_QUERY);
                     parse_str($compdata, $cparams);
-                
+
                     $complist = $complist . $cparams['compID'] . '-';
                 }
             }
         }
-        
+
         // We trim the last "-" character off our competition list.
         if ( $complist != '' ) {
             $complist = substr($complist, 0, strlen($complist) - 1);
         }
-        
+
         return $complist;
     }
-    
+
     // This function checks if a specified team is in a competition. Used when rerunning team
     // checks against a full association list.
     //
     // Returns true if the team is in the comp, or false if they're not.
     function fspc_fsp_team_in_comp($sportID, $assocID, $compID, $teamID) {
         $url = fspc_fsp_gen_link($sportID, $assocID, 0, $compID, 0, 4);
-        $html = file_get_contents($url);
+        $html = fspc_cache_file_get($url, FSPC_GET_HTML, FSPC_DEFAULT_CACHE_TIME, 'fsp');
         if ( strpos($html, 'id=' . $teamID) !== false ) return true;
         return false;
     }
-    
+
     // This function parses a fixture and returns an array of data for that fixture than can be
     // parsed for a calendar.
     //
@@ -266,14 +266,14 @@
     // opponent     - the name of the opponent (string)
     // scoreagainst - formatted score for the opposition team (string)
     // gameurl      - the FSP URL to the game statistics (string)
-    
+
     function fspc_fsp_parse_calendar(&$timecheck, $complist, &$teamname, $dstart, $dend, $startoffset,
                                      $sportID, $assocID, $clubID, $teamID, $gamelength, &$inpast) {
         $compID = explode("-", $complist);
-        
+
         $gamedata = array();
         $inpast = true;
-        
+
     // If the team ID is zero, we just return an empty array. This allows a URL to have
     // a placeholder value in the event that the external calendars are ready but the
     // FSP calendar isn't ready.
@@ -281,16 +281,16 @@
 
         foreach($compID as $comp) {
             $teamurl = fspc_fsp_gen_link($sportID, $assocID, $clubID, $comp, $teamID, 1);
-            $teamhtml = file_get_html($teamurl);
-            
+            $teamhtml = fspc_cache_file_get($teamurl, FSPC_GET_HTML, FSPC_DEFAULT_CACHE_TIME, 'fsp');
+
             if ( $teamname == '' ) $teamname = fspc_fsp_get_team_name_from_html($teamhtml);
-            
+
             foreach($teamhtml->find('table[class=tableClass]', 0)->find('tr') as $game) {
                 if ( ! $game->find('th') && ! $game->find('h3') ) {
                     $round = $game->find('td', 0)->plaintext;
                     $rawdate = $game->find('td', 1)->plaintext;
                     $rawtime = $game->find('td', 2)->plaintext;
-                    
+
                     if ( $rawtime != 'BYE' ) {
                         $venueurl = $game->find('td', 3)->find('a', 0)->href;
                         $venue = $game->find('td', 3)->find('a', 0)->plaintext;
@@ -299,17 +299,17 @@
                         $opponent = $game->find('td', 6)->find('a', 0)->plaintext;
                         $scoreagainst = $game->find('td', 7)->plaintext;
                         $gameurl = $game->find('td', 8)->find('a', 0)->href;
-                        
+
                         // Some game results aren't just a simple score, like AFL football. So we do
                         // some additional checks to work out what kind of score we're working with,
                         // and fall back to just stripping non-numeric characters out if it doesn't
                         // match another known pattern.
-                        
+
                         if ( preg_match('/[0-9*]\.[0-9]*-[0-9]*/', $scorefor) ) {
                             // AFL style scores
                             $scorefor = str_replace('.', '-', $scorefor);
                             $scoreagainst = str_replace('.', '-', $scoreagainst);
-                            
+
                             $scorefor = preg_replace('/[^0-9\-]/i', '', $scorefor);
                             $scoreagainst = preg_replace('/[^0-9\-]/i', '', $scoreagainst);
                         } else {
@@ -325,20 +325,20 @@
                         $scoreagainst = '';
                         $gameurl = '';
                     }
-                    
+
                     $allday = 0;
                     $strdate = '20' . substr($rawdate, 6, 2) . '-' . substr($rawdate, 3, 2) . '-' . substr($rawdate, 0, 2);
-                    
+
                     if ( $rawtime == 'BYE' ) {
                         $allday = 1;
                         $strtime = '00:00:00';
                     } else {
                         $strtime = substr($rawtime, 0, 2) . ':' . substr($rawtime, 3, 2) . ':00';
                     }
-                    
+
                     $startdate = strtotime($strdate . ' ' . $strtime . ' - ' . $startoffset . ' minutes');
                     if ( $startdate > strtotime("now") ) $inpast = false;
-                    
+
                     if ( $allday == 0 ) {
                         if ( $gamelength != '' ) {
                             $enddate = strtotime($strdate . ' ' . $strtime . ' + ' . $gamelength . ' minutes');
@@ -348,11 +348,11 @@
                     } else {
                         $enddate = strtotime($strdate . ' ' . $strtime . ' + 1 day');
                     }
-                    
+
                     if ( ! ($startdate < $dstart || $startdate > $dend) ) {
                         $uid = date('YmdHis', $startdate);
                         $dtstamp = date('Ymd\THis', $startdate);
-                        
+
                         $rounddata = array();
                         $rounddata['round'] = $round;
                         $rounddata['rawdate'] = $rawdate;
@@ -369,14 +369,14 @@
                         $rounddata['opponent'] = $opponent;
                         $rounddata['scoreagainst'] = $scoreagainst;
                         $rounddata['gameurl'] = $gameurl;
-                        
+
                         $gamedata[$dtstamp] = $rounddata;
                         $timecheck[$dtstamp] = 1;
                     }
                 }
             }
         }
-        
+
         return $gamedata;
     }
 
@@ -387,7 +387,7 @@
     // location if it can.
     function fspc_fsp_get_location($assocID, $location) {
         $location = preg_replace('/ *$/i', '', $location);
-        
+
         if ( $assocID == 4972 ) {
             if ( strpos($location, 'Mill Park Stadium') !== false ) {
                 $court = substr($location, strlen($location) - 1, 1);
@@ -400,7 +400,7 @@
                 $location = 'Marymede Catholic College (Court ' . $court . '), 60 Williamsons Rd, South Morang, VIC, 3752';
             } else if ( strpos($location, 'Epping Leisure Centre') !== false ) {
                 $court = substr($location, strlen($location) - 2, 2);
-                $location = 'Epping Leisure Centre (Court ' . $court . '), 41-53 Miller St, Epping, VIC, 3076';
+                $location = 'Epping Leisure Centre (Court ' . $court . '), 41-53 Miller Rd, Epping, VIC, 3076';
             } else if ( strpos($location, 'Darebin Community Sports Stadium') !== false ) {
                 $court = preg_replace('/[^0-9]/i', '', substr($location, strlen($location) - 2, 2));
                 $location = 'Darebin Community Sports Stadium (Court ' . $court . '), 857 Plenty Rd, Reservoir, VIC, 3073';
@@ -409,7 +409,7 @@
                 $location = 'Keon Park Youth Club (Court ' . $court . '), Dole Avenue, Reservoir, VIC, 3073';
             }
         }
-        
+
         $location = preg_replace('/,/i', '\\,', $location);
         return $location;
     }
