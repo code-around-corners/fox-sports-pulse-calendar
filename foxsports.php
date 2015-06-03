@@ -188,7 +188,7 @@
         $teamname = $html->find('h2', 0)->plaintext;
         $teamname = preg_replace('/[^:]*:([^\(]*).*/i', '$1', $teamname);
         $teamname = preg_replace('/&nbsp;/i', ' ', $teamname);
-        $teamname = preg_replace('/[^A-Za-z0-9 ]*/i', '', $teamname);
+        $teamname = preg_replace('/[^A-Za-z0-9 .]*/i', '', $teamname);
         $teamname = preg_replace('/^ */i', '', $teamname);
         $teamname = preg_replace('/ *$/i', '', $teamname);
         $teamname = preg_replace('/  */i', ' ', $teamname);
