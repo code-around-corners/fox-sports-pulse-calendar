@@ -385,7 +385,7 @@
                     }
 
                     if ( ! ($startdate < $dstart || $startdate > $dend) ) {
-                        $uid = date('YmdHis', $startdate);
+                        $uid = date('YmdHis', $startdate) . '-' . $teamID . '@codearoundcorners.com';
                         $dtstamp = date('Ymd\THis', $startdate);
 
                         $rounddata = array();
