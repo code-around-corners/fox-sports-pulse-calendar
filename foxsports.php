@@ -72,7 +72,7 @@
             if ( $poolID == 0 ) {
                 $url .= '&round=-1&pool=' . $poolID;
             } else {
-                $url .= '&pool=-1';
+                $url .= '&round=-1&pool=-1';
             }
         }
 
