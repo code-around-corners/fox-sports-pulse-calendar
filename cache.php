@@ -28,13 +28,15 @@
     define('FSPC_GET_HTML', 2);
 
     function fspc_cache_file_get($url, $mode = FSPC_GET_CONTENTS, $cacheTime = FSPC_DEFAULT_CACHE_TIME, $category = '') {
+        $noCache = isset($_GET['nocache']);
+
         $cacheDir = FSPC_BASE_CACHE_DIR . '/';
         if ( $category != '' ) $cacheDir .= $category . '/';
         $cacheFile = $cacheDir . md5($url);
 
         $isFileCached = file_exists($cacheFile);
 
-        if ( $isFileCached && ( (time() - $cacheTime) < filemtime($cacheFile) ) ) {
+        if ( ! $noCache && ( $isFileCached && ( (time() - $cacheTime) < filemtime($cacheFile) ) ) ) {
 
             if ( $mode == FSPC_GET_CONTENTS ) {
                 $html = file_get_contents($cacheFile);
