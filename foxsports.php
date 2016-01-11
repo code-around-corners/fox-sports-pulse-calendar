@@ -74,6 +74,9 @@
             } else {
                 $url .= '&round=-1&pool=-1';
             }
+        } elseif ( $type == 5 ) {
+            $id = '0-' . $assocID . '-0-0-0';
+            $url = 'assoc_page.cgi?c=' . $id . '&a=VENUE';
         }
 
         return ($FSPC_FSP_BASE_URL . $url);
@@ -442,6 +445,24 @@
             } else if ( strpos($location, 'Keon Park Youth Club') !== false ) {
                 $court = 14;
                 $location = 'Keon Park Youth Club (Court ' . $court . '), Dole Avenue, Reservoir, VIC, 3073';
+            }
+        } else {
+            $venueurl = fspc_fsp_gen_link(0, $assocID, 0, 0, 0, 0, 5);
+            $venuehtml = fspc_cache_file_get($venueurl, FSPC_GET_HTML, FSPC_DEFAULT_CACHE_TIME, 'fsp');
+            $venueaddress = '';
+
+            foreach($venuehtml->find('table[class=tableClass]', 0)->find('tr') as $venue) {
+                if ( ! $venue->find('th') ) {
+                    $venuename = $venue->find('td', 0)->find('a', 0)->plaintext;
+                    
+                    if ( $venuename == $location ) {
+                        $venueaddress = trim($venue->find('td', 1)->plaintext);
+                    }
+                }
+            }
+
+            if ( $venueaddress != '' ) {
+                $location .= ', ' . $venueaddress;
             }
         }
 
