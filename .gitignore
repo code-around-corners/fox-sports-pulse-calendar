@@ -6,3 +6,4 @@ cache
 tz
 .well-known
 .htaccess
+pid
