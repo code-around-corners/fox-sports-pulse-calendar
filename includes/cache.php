@@ -109,7 +109,7 @@ class Cache {
 			// to grab content in the event the first attempt fails. We always break the loop the
 			// first time we actually get content back from the server.
             while ( ! $data && $retryCount > 0 ) {
-                $data = file_get_contents($url);
+                $data = @file_get_contents($url);
                 $retryCount--;
             }
 

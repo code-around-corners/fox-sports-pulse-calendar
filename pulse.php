@@ -256,9 +256,31 @@
 	            if ( $teamname == '' ) $teamname = $FSPC_DEFAULT_TEAM_NAME;
 				$text = isset($_GET["t"]);
 				
-				fspc_cal_output_headers($teamname, $text);				
-				echo fspc_cache_file_get($cacheUrl . "&cache", FSPC_GET_CONTENTS, 3600, 'ics');
+				$data = fspc_cache_file_get($cacheUrl . "&cache", FSPC_GET_CONTENTS, 3600, 'ics');
+
+				if ( $data ) {
+					fspc_cal_output_headers($teamname, $text);
+					echo $data;
+				} else {
+					header('HTTP/1.1 503 Service Temporarily Unavailable');
+					header('Status: 503 Service Temporarily Unavailable');
+					header('Retry-After: 30');
+					
+					return;
+				}
 			} else {
+				if ( ! isset($_GET["continue"]) ) {
+					if ( fspc_get_active_pids() <= 3 ) {
+					    fspc_set_pid_file();
+					} else {
+						header('HTTP/1.1 503 Service Temporarily Unavailable');
+						header('Status: 503 Service Temporarily Unavailable');
+						header('Retry-After: 30');
+						
+						return;
+					}
+				}
+				
 	            $sportID = 0;
 	            $assocID = $_GET['assoc'];
 	            $clubID = $_GET['club'];
@@ -356,7 +378,7 @@
 	                                $url = substr($url, 0, strpos($url, '&check='));
 	                            }
 	
-	                            $url .= '&check=' . $checked . '&valid=' . $complist . '&cache';
+	                            $url .= '&check=' . $checked . '&valid=' . $complist . '&cache&continue';
 	                            header('Location: ' . $url);
 	                            return;
 	                        }
@@ -417,9 +439,9 @@
 	                    // Now we redirect to the new URL. We check if the text variable is set to facilitate
 	                    // testing and ensure debugging data still shows up.
 	                    if ( $text ) {
-	                        header('Location: ' . $fullurl . '&s=1&t=1&cache');
+	                        header('Location: ' . $fullurl . '&s=1&t=1&cache&continue');
 	                    } else {
-	                        header('Location: ' . $fullurl . '&s=1&cache');
+	                        header('Location: ' . $fullurl . '&s=1&cache&continue');
 	                    }
 	
 	                    return;
@@ -454,6 +476,7 @@
 	
 				fspc_cal_output_headers($teamname, $text);
 	            fspc_cal_output_calendar($timecheck, $gamedata, $teamname, $timezone, $extdata, $exttz, $clash, $text);
+			    fspc_clear_pid_file();
 	        }
 		}
 		
@@ -500,16 +523,6 @@
 		unlink($pidFile);    	
     }
 
-	if ( isset($_GET["cache"]) ) {
-		fspc_main();
-	} elseif ( fspc_get_active_pids() < 3 ) {
-	    fspc_set_pid_file();
-	    fspc_main();
-	    fspc_clear_pid_file();
-	} else {
-		header('HTTP/1.1 503 Service Temporarily Unavailable');
-		header('Status: 503 Service Temporarily Unavailable');
-		header('Retry-After: 30');
-	}
+	fspc_main();
 
 ?>
