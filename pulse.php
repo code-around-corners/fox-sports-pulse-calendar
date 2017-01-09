@@ -435,7 +435,6 @@
 	            $calData = ob_get_flush();
 	            ob_end_clean();
 	            
-	            echo $calData;
 	            $cache = Cache::getInstance();
 	            $cache->putFile($cacheUrl, $calData, 'ics');
 	        }
