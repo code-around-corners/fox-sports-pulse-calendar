@@ -270,7 +270,13 @@
 				}
 			} else {
 				if ( ! isset($_GET["continue"]) ) {
-					if ( fspc_get_active_pids() <= 3 ) {
+					$retryCount = 3;
+					while ( fspc_get_active_pids() > 3 && $retryCount > 0 ) {
+						sleep(10);
+						$retryCount--;
+					}
+					
+					if ( $retryCount > 0 )
 					    fspc_set_pid_file();
 					} else {
 						header('HTTP/1.1 503 Service Temporarily Unavailable');
