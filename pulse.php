@@ -276,7 +276,7 @@
 						$retryCount--;
 					}
 					
-					if ( $retryCount > 0 )
+					if ( $retryCount > 0 ) {
 					    fspc_set_pid_file();
 					} else {
 						header('HTTP/1.1 503 Service Temporarily Unavailable');
