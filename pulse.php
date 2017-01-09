@@ -506,7 +506,7 @@
     		if ( fspc_is_pid_running(substr($pidFile, 4, strlen($pidFile) - 8)) ) {
     			$activeCount++;
     		} else {
-    			unlink($pidFile);
+    			@unlink($pidFile);
     		}
     	}
     	
