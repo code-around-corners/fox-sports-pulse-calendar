@@ -23,7 +23,7 @@
     // Theoretically this should be a constant, however I've added it as a variable
     // since previously the URL was http://www.sportingpulse.com/. In case it
     // changes again, we can update it in a single location.
-    $FSPC_FSP_BASE_URL = 'http://www.foxsportspulse.com/';
+    $FSPC_FSP_BASE_URL = 'http://websites.sportstg.com/';
 
     // This function accepts a number of different parameters and will return the
     // URL on Fox Sports Pulse for the requested data.

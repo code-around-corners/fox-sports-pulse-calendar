@@ -76,7 +76,9 @@
     // It depends on the geturl function to be available on the YOURLS API.
     function fspc_yourls_get($url) {
         $yourls = fspc_yourls_api('geturl', $url, NULL, NULL);
-        return (string)$yourls->keyword;
+
+		if ( $yourls ) return (string)$yourls->keyword;
+		return null;
     }
     
     // This wrapper function will update the URL of the specified short code.
@@ -89,6 +91,8 @@
     // API rather than the build_url function.
     function fspc_yourls_expand($shorturl) {
         $yourls = fspc_yourls_api('expand', NULL, $shorturl, NULL);
-        return (string)$yourls->longurl;
+        
+        if ( $yourls ) return (string)$yourls->longurl;
+        return null;
     } 
 ?>

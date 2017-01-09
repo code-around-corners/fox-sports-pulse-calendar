@@ -216,9 +216,9 @@
                     $texturl = $fullurl . '&t=1';
 
                     if ( $FSPC_YOURLS_ENABLE ) {
-                        $shorturl = str_replace('https://', '', fspc_yourls_shorten($fullurl, $teamname . ' (FSPC)'));
+                        $shorturl = str_replace('http' . (empty($_SERVER['HTTPS']) ? "" : "s") . '://', '', fspc_yourls_shorten($fullurl, $teamname . ' (FSPC)'));
                     } else {
-                        $shorturl = str_replace('https://', '', $fullurl);
+                        $shorturl = str_replace('http' . (empty($_SERVER['HTTPS']) ? "" : "s") . '://', '', $fullurl);
                     }
 
                     // Finally, we show the generated data to the user.
@@ -226,8 +226,31 @@
                 }
             }
         } else if ( fspc_get_mode() == 2 ) {
-			$cacheUrl = "http" . (empty($_SERVER['HTTPS']) ? "" : "s") . "://" . $_SERVER["HTTP_HOST"] . $_SERVER["REQUEST_URI"];
-			
+            $sportID = 0;
+            $assocID = $_GET['assoc'];
+            $clubID = $_GET['club'];
+            $teamID = $_GET['team'];
+            $complist = $_GET['comps'];
+
+            $timezone = '';
+            if ( isset($_GET['tz']) ) $timezone = '&tz=' . $_GET['tz'];
+            $gamelength = '';
+            if ( isset($_GET['gl']) ) $gamelength = '&gl=' . $_GET['gl'];
+            $startoffset = '';
+            if ( isset($_GET['so']) ) $gamelength = '&so=' . $_GET['so'];
+            $extics = '';
+            if ( isset($_GET['ics']) ) $extics = '&ics=' . $_GET['ics'];
+            $clashmode = '';
+            if ( isset($_GET['cl']) ) $clashmode = '&cl=' . $_GET['cl'];
+            $startdate = '';
+            if ( isset($_GET['sd']) ) $startdate = '&sd=' . $_GET['sd'];
+            $enddate = '';
+            if ( isset($_GET['ed']) ) $enddate = '&ed=' . $_GET['ed'];
+
+            $baseurl = 'http' . (empty($_SERVER['HTTPS']) ? "" : "s") . '://' . $_SERVER['HTTP_HOST'] . $_SERVER['SCRIPT_NAME'];
+            $cacheUrl = $baseurl . '?assoc=' . $assocID . '&club=' . $clubID . '&team=' . $teamID . '&comps=' . $complist;
+            $cacheUrl .= $timezone . $gamelength . $extics . $clashmode . $startdate . $enddate;
+
 			if ( isset($_GET["assoc"]) && ! isset($_GET["cache"]) ) {
 	            $teamname = fspc_fsp_get_club_name($sportID, $assocID, $clubID);
 	            if ( $teamname == '' ) $teamname = $FSPC_DEFAULT_TEAM_NAME;
@@ -273,7 +296,7 @@
 	
 	            // This reference variable is used to check if all events occur in the past.
 	            // If they do, we'll force an update of the competition ID list in case a
-	            // team has been moved to a different divsion.
+	            // team has been moved to a different division.
 	            $inpast = false;
 	
 	            $gamedata = fspc_fsp_parse_calendar($timecheck, $complist, $teamname, $dstart, $dend, $startoffset,
@@ -328,12 +351,12 @@
 	                        // If we've hit the maximum competition checks on this pass, we add what's been checked
 	                        // to the URL and reload the calendar to continue with the next pass.
 	                        if ( $curcompcheck == $FSPC_MAX_COMP_CHECK ) {
-	                            $url = 'https://' . $_SERVER['HTTP_HOST'] . $_SERVER['REQUEST_URI'];
+	                            $url = 'http' . (empty($_SERVER['HTTPS']) ? "" : "s") . '://' . $_SERVER['HTTP_HOST'] . $_SERVER['REQUEST_URI'];
 	                            if ( strpos($url, '&check=') !== false ) {
 	                                $url = substr($url, 0, strpos($url, '&check='));
 	                            }
 	
-	                            $url .= '&check=' . $checked . '&valid=' . $complist;
+	                            $url .= '&check=' . $checked . '&valid=' . $complist . '&cache';
 	                            header('Location: ' . $url);
 	                            return;
 	                        }
@@ -358,7 +381,7 @@
 	                    // First we get the current short URL. Because YOURLS returns the same
 	                    // short URL if the URL already exists, we can use the existing shorten
 	                    // function to get this data.
-	                    $url = 'https://' . $_SERVER['HTTP_HOST'] . $_SERVER['REQUEST_URI'];
+	                    $url = 'http' . (empty($_SERVER['HTTPS']) ? "" : "s") . '://' . $_SERVER['HTTP_HOST'] . $_SERVER['REQUEST_URI'];
 	                    if ( strpos($url, '&check=') !== false ) {
 	                        $url = substr($url, 0, strpos($url, '&check='));
 	                    }
@@ -384,7 +407,7 @@
 	                    $enddate = '';
 	                    if ( isset($_GET['ed']) ) $enddate = '&ed=' . $_GET['ed'];
 	
-	                    $baseurl = 'https://' . $_SERVER['HTTP_HOST'] . $_SERVER['SCRIPT_NAME'];
+	                    $baseurl = 'http' . (empty($_SERVER['HTTPS']) ? "" : "s") . '://' . $_SERVER['HTTP_HOST'] . $_SERVER['SCRIPT_NAME'];
 	                    $fullurl = $baseurl . '?assoc=' . $assocID . '&club=' . $clubID . '&team=' . $teamID . '&comps=' . $complist;
 	                    $fullurl .= $timezone . $gamelength . $extics . $clashmode . $startdate . $enddate;
 	
@@ -394,16 +417,16 @@
 	                    // Now we redirect to the new URL. We check if the text variable is set to facilitate
 	                    // testing and ensure debugging data still shows up.
 	                    if ( $text ) {
-	                        header('Location: ' . $fullurl . '&s=1&t=1');
+	                        header('Location: ' . $fullurl . '&s=1&t=1&cache');
 	                    } else {
-	                        header('Location: ' . $fullurl . '&s=1');
+	                        header('Location: ' . $fullurl . '&s=1&cache');
 	                    }
 	
 	                    return;
 	                }
 	            }
 	
-	            // Now we grab the timezone data. If nothign is specified, we'll default to Melbourne.
+	            // Now we grab the timezone data. If nothing is specified, we'll default to Melbourne.
 	            if ( isset($_GET['tz']) ) {
 	                $timezone = $_GET['tz'];
 	            } else {
@@ -430,13 +453,7 @@
 	            if ( $clash == '' ) $clash = 1;
 	
 				fspc_cal_output_headers($teamname, $text);
-				ob_start();
 	            fspc_cal_output_calendar($timecheck, $gamedata, $teamname, $timezone, $extdata, $exttz, $clash, $text);
-	            $calData = ob_get_flush();
-	            ob_end_clean();
-	            
-	            $cache = Cache::getInstance();
-	            $cache->putFile($cacheUrl, $calData, 'ics');
 	        }
 		}
 		
