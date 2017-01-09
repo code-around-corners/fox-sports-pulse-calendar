@@ -5,3 +5,4 @@ error_log
 cache
 tz
 .well-known
+.htaccess
