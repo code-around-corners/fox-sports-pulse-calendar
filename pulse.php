@@ -520,7 +520,7 @@
     
     function fspc_clear_pid_file() {
     	$pidFile = "pid/" . posix_getpid() . ".pid";
-		unlink($pidFile);    	
+		@unlink($pidFile);    	
     }
 
 	fspc_main();
