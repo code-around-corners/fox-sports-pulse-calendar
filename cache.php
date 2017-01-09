@@ -22,7 +22,7 @@
     include_once('includes/cache.php');
 
     define('FSPC_BASE_CACHE_DIR', 'cache');
-    define('FSPC_DEFAULT_CACHE_TIME', 3600);
+    define('FSPC_DEFAULT_CACHE_TIME', 10800);
     define('FSPC_CACHE_RETRY', 3);
 
     define('FSPC_GET_CONTENTS', 1);
@@ -33,6 +33,7 @@
     	$cacheData->setBaseDirectory(FSPC_BASE_CACHE_DIR);
     	$cacheData->setCacheTime(FSPC_DEFAULT_CACHE_TIME);
     	$cacheData->setRetryCount(FSPC_CACHE_RETRY);
+    	$cacheData->setCacheDrift(600);
 
         $noCache = isset($_GET['nocache']);
 		if ( $noCache ) $cacheTime = -1;
