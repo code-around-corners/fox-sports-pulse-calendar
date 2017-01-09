@@ -462,7 +462,54 @@
             fspc_html_footer();
         }
     }
+    
+    function fspc_is_pid_running($pid) {
+	    $isRunning = false;
+	    exec("ps -A | grep -i $pid | grep -v grep", $pids);
 
-    fspc_main();
+	    if ( count($pids) > 0 ) $isRunning = true;
+	    return $isRunning;
+    }
+    
+    function fspc_get_active_pids() {
+		if ( ! is_dir("pid") ) {
+			mkdir("pid", 0755, true);
+    		return 0;
+    	}
+    	
+    	$activeCount = 0;
+    	
+    	foreach ( glob("pid/*.pid") as $pidFile ) {
+    		if ( fspc_is_pid_running(substr($pidFile, 0, strlen($pidFile) - 4)) ) {
+    			$activeCount++;
+    		} else {
+    			unlink($pidFile);
+    		}
+    	}
+    	
+    	return $activeCount;
+    }
+    
+    function fspc_set_pid_file() {
+    	$pidFile = "pid/" . posix_getpid() . ".pid";
+    	file_put_contents($pidFile, posix_getpid());
+    }
+    
+    function fspc_clear_pid_file() {
+    	$pidFile = "pid/" . posix_getpid() . ".pid";
+		unlink($pidFile);    	
+    }
+
+	if ( isset($_GET["cache"]) ) {
+		fspc_main();
+	} elseif ( fspc_get_active_pids() < 3 ) {
+	    fspc_set_pid_file();
+	    fspc_main();
+	    fspc_clear_pid_file();
+	} else {
+		header('HTTP/1.1 503 Service Temporarily Unavailable');
+		header('Status: 503 Service Temporarily Unavailable');
+		header('Retry-After: 30');
+	}
 
 ?>
