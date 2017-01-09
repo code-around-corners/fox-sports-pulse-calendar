@@ -480,7 +480,7 @@
     	$activeCount = 0;
     	
     	foreach ( glob("pid/*.pid") as $pidFile ) {
-    		if ( fspc_is_pid_running(substr($pidFile, 0, strlen($pidFile) - 4)) ) {
+    		if ( fspc_is_pid_running(substr($pidFile, 4, strlen($pidFile) - 8)) ) {
     			$activeCount++;
     		} else {
     			unlink($pidFile);
