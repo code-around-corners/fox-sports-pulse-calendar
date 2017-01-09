@@ -25,6 +25,8 @@
     include_once('html.php');
     include_once('calendar.php');
     include_once('cache.php');
+    
+    date_default_timezone_set("UTC");
 
     // Debugging options. I'm leaving these on by default currently as the script is still
     // in development, however at some point they'll need to get turned off so debugging
@@ -171,7 +173,7 @@
                                 // Because we strip the protocol off the URLs we pass through due to
                                 // some strange issue I haven't been able to solve yet, we add back the
                                 // http:// part of the URL.
-                                $icsurl = 'http://' . $_POST['ics' . $x];
+                                $icsurl = 'https://' . $_POST['ics' . $x];
                                 $icshtml = fspc_cache_file_get($icsurl, FSPC_GET_CONTENTS, FSPC_DEFAULT_CACHE_TIME, 'extcal');
 
                                 if ( substr($icshtml, 0, 2) == "\x1f\x8b" ) {
@@ -184,7 +186,7 @@
                                 // protocol. Most calendars don't usually use HTTPS but just in case it does,
                                 // we check for that too.
                                 if ( strpos($icshtml->plaintext, 'BEGIN:VCALENDAR') === false ) {
-                                    $icsurl = 'https://' . $_POST['ics' . $x];
+                                    $icsurl = 'http://' . $_POST['ics' . $x];
                                     $icssrc = fspc_cache_file_get($icsurl, FSPC_GET_CONTENTS, FSPC_DEFAULT_CACHE_TIME, 'extcal');
 
                                     if ( substr($icshtml, 0, 2) == "\x1f\x8b" ) {
@@ -214,9 +216,9 @@
                     $texturl = $fullurl . '&t=1';
 
                     if ( $FSPC_YOURLS_ENABLE ) {
-                        $shorturl = str_replace('http://', '', fspc_yourls_shorten($fullurl, $teamname . ' (FSPC)'));
+                        $shorturl = str_replace('https://', '', fspc_yourls_shorten($fullurl, $teamname . ' (FSPC)'));
                     } else {
-                        $shorturl = str_replace('http://', '', $fullurl);
+                        $shorturl = str_replace('https://', '', $fullurl);
                     }
 
                     // Finally, we show the generated data to the user.
@@ -224,202 +226,221 @@
                 }
             }
         } else if ( fspc_get_mode() == 2 ) {
-            $sportID = 0;
-            $assocID = $_GET['assoc'];
-            $clubID = $_GET['club'];
-            $teamID = $_GET['team'];
-
-            $timecheck = array();
-            $complist = $_GET['comps'];
-            $teamname = '';
-
-            // Default start and end ranges if they're not specified.
-            $startdate = '1900-01-01';
-            $enddate = '2099-01-01';
-
-            // Now we grab the ranges from the URL if they exist.
-            if ( isset($_GET['sd']) ) $startdate = $_GET['sd'];
-            if ( isset($_GET['ed']) ) $enddate = $_GET['ed'];
-
-            // And we do the same for the game length.
-            $gamelength = '';
-            if ( isset($_GET['gl']) ) $gamelength = preg_replace('/[^0-9]*/', '', $_GET['gl']);
-            if ( $gamelength == '' ) $gamelength = 45;
-
-            // And we do the same for the start offset.
-            $startoffset = '';
-            if ( isset($_GET['so']) ) $startoffset = preg_replace('/[^0-9]*/', '', $_GET['so']);
-            if ( $startoffset == '' ) $startoffset = 0;
-
-            // And also our text variable for debugging.
-            $text = false;
-            if ( isset($_GET['t']) ) $text = true;
-
-            // And we create some date variables.
-            $dstart = strtotime($startdate);
-            $dend = strtotime($enddate . ' + 1 day - 1 second');
-
-            // This reference variable is used to check if all events occur in the past.
-            // If they do, we'll force an update of the competition ID list in case a
-            // team has been moved to a different divsion.
-            $inpast = false;
-
-            $gamedata = fspc_fsp_parse_calendar($timecheck, $complist, $teamname, $dstart, $dend, $startoffset,
-                                                $sportID, $assocID, $clubID, $teamID, $gamelength, $inpast);
-
-            // If at this point the team name is blank, and we have a club ID available, we'll check the
-            // club name listed on the club page. Generally at this point it means we've got a data
-            // issue anyway, but we still want some data showing if possible.
-            if ( $teamname == '' ) $teamname = fspc_fsp_get_club_name($sportID, $assocID, $clubID);
-            if ( $teamname == '' ) $teamname = $FSPC_DEFAULT_TEAM_NAME;
-
-            // We check if we have any elements returned from the calendar. If we don't, then they've
-            // probably moved onto their next season. We need to rerun our competition check in that
-            // case and try again. This only works when we have a club ID.
-            $checkpast = true;
-            if ( isset($_GET['s']) ) $checkpast = false;
-
-            if ( ( count($gamedata) == 0 || ($inpast && $checkpast) ) && $teamID > 0 ) {
-                // First, we'll check the club page to see if the team is listed there. If they
-                // are, we'll use that competition ID to determine the calendar events.
-                $complist = '';
-                if ( $clubID != '0' ) {
-                    $complist = fspc_fsp_get_comps($sportID, $assocID, $clubID, $teamID);
-                }
-
-                // If we don't have any identified competitions (or we don't have a valid club ID)
-                // we'll then check the raw competition page for the association. This step takes a
-                // couple of seconds per comp, so for large pages this will stall the refresh for
-                // a couple of minutes.
-                if ( $complist == '' ) {
-                    $complist = fspc_fsp_get_all_comps($sportID, $assocID);
-                    $comparray = explode('-', $complist);
-                    $complist = '';
-                    $checked = '';
-
-                    global $FSPC_MAX_COMP_CHECK;
-                    $curcompcheck = 0;
-
-                    if ( isset($_GET['check']) ) $checked = $_GET['check'];
-                    if ( isset($_GET['valid']) ) $complist = $_GET['valid'];
-
-                    foreach($comparray as $comp) {
-                        if ( strpos($checked, $comp) === false ) {
-                            $curcompcheck++;
-                            $checked .= $comp . '-';
-
-                            if ( fspc_fsp_team_in_comp($sportID, $assocID, $comp, $teamID) ) {
-                                $complist .= $comp . '-';
-                            }
-                        }
-
-                        // If we've hit the maximum competition checks on this pass, we add what's been checked
-                        // to the URL and reload the calendar to continue with the next pass.
-                        if ( $curcompcheck == $FSPC_MAX_COMP_CHECK ) {
-                            $url = 'http://' . $_SERVER['HTTP_HOST'] . $_SERVER['REQUEST_URI'];
-                            if ( strpos($url, '&check=') !== false ) {
-                                $url = substr($url, 0, strpos($url, '&check='));
-                            }
-
-                            $url .= '&check=' . $checked . '&valid=' . $complist;
-                            header('Location: ' . $url);
-                            return;
-                        }
-                    }
-
-                    if ( $complist != '' ) {
-                        $complist = substr($complist, 0, strlen($complist) - 1);
-                    }
-                }
-
-                if ( $complist != '' ) {
-                    $teamname = '';
-                    $gamedata = fspc_fsp_parse_calendar($timecheck, $complist, $teamname, $dstart, $dend, $startoffset,
-                                                        $sportID, $assocID, $clubID, $teamID, $gamelength, $inpast);
-                    if ( $teamname == '' ) $teamname = fspc_fsp_get_club_name($sportID, $assocID, $clubID);
-                    if ( $teamname == '' ) $teamname = $FSPC_DEFAULT_TEAM_NAME;
-                }
-
-                // If we've actually got some gamedata now, we'll update the stored short URL
-                // with the new compID values to avoid having to do this again.
-                if ( count($gamedata) != 0 && $FSPC_YOURLS_ENABLE) {
-                    // First we get the current short URL. Because YOURLS returns the same
-                    // short URL if the URL already exists, we can use the existing shorten
-                    // function to get this data.
-                    $url = 'http://' . $_SERVER['HTTP_HOST'] . $_SERVER['REQUEST_URI'];
-                    if ( strpos($url, '&check=') !== false ) {
-                        $url = substr($url, 0, strpos($url, '&check='));
-                    }
-
-                    $url = str_replace('&t=1', '', $url);
-                    $url = str_replace('?t=1&', '?', $url);
-
-                    $url = str_replace('%2F', '/', $url);
-                    $shorturl = fspc_yourls_get($url);
-
-                    $timezone = '';
-                    if ( isset($_GET['tz']) ) $timezone = '&tz=' . $_GET['tz'];
-                    $gamelength = '';
-                    if ( isset($_GET['gl']) ) $gamelength = '&gl=' . $_GET['gl'];
-                    $startoffset = '';
-                    if ( isset($_GET['so']) ) $gamelength = '&so=' . $_GET['so'];
-                    $extics = '';
-                    if ( isset($_GET['ics']) ) $extics = '&ics=' . $_GET['ics'];
-                    $clashmode = '';
-                    if ( isset($_GET['cl']) ) $clashmode = '&cl=' . $_GET['cl'];
-                    $startdate = '';
-                    if ( isset($_GET['sd']) ) $startdate = '&sd=' . $_GET['sd'];
-                    $enddate = '';
-                    if ( isset($_GET['ed']) ) $enddate = '&ed=' . $_GET['ed'];
-
-                    $baseurl = 'http://' . $_SERVER['HTTP_HOST'] . $_SERVER['SCRIPT_NAME'];
-                    $fullurl = $baseurl . '?assoc=' . $assocID . '&club=' . $clubID . '&team=' . $teamID . '&comps=' . $complist;
-                    $fullurl .= $timezone . $gamelength . $extics . $clashmode . $startdate . $enddate;
-
-                    // If the short URL didn't match anything then don't update it.
-                    if ( $shorturl != '' ) fspc_yourls_update($shorturl, $fullurl, $teamname . ' (FSPC)');
-
-                    // Now we redirect to the new URL. We check if the text variable is set to facilitate
-                    // testing and ensure debugging data still shows up.
-                    if ( $text ) {
-                        header('Location: ' . $fullurl . '&s=1&t=1');
-                    } else {
-                        header('Location: ' . $fullurl . '&s=1');
-                    }
-
-                    return;
-                }
-            }
-
-            // Now we grab the timezone data. If nothign is specified, we'll default to Melbourne.
-            if ( isset($_GET['tz']) ) {
-                $timezone = $_GET['tz'];
-            } else {
-                $timezone = 'Australia/Melbourne';
-            }
-
-            // Next we'll get any external calendars, if we have them.
-            $priority = 1;
-            $extdata = array();
-            $exttz = array();
-
-            if ( isset($_GET['ics']) ) {
-                $shorticsid = explode('-', $_GET['ics']);
-
-                foreach ( $shorticsid as $shortics ) {
-                    $extdata[$priority] = fspc_cal_parse_ext_calendar($timecheck, $shortics, $exttz, $timezone, $priority, $dstart, $dend);
-                    $priority++;
-                }
-            }
-
-            // Now we output the calendar based on whatever fields we have available.
-            $clash = '';
-            if ( isset($_GET['cl']) ) $clash = preg_replace('/[^0-9]*/', '', $_GET['cl']);
-            if ( $clash == '' ) $clash = 1;
-
-            fspc_cal_output_calendar($timecheck, $gamedata, $teamname, $timezone, $extdata, $exttz, $clash, $text);
-        }
-
+			$cacheUrl = "http" . (empty($_SERVER['HTTPS']) ? "" : "s") . "://" . $_SERVER["HTTP_HOST"] . $_SERVER["REQUEST_URI"];
+			
+			if ( isset($_GET["assoc"]) && ! isset($_GET["cache"]) ) {
+	            $teamname = fspc_fsp_get_club_name($sportID, $assocID, $clubID);
+	            if ( $teamname == '' ) $teamname = $FSPC_DEFAULT_TEAM_NAME;
+				$text = isset($_GET["t"]);
+				
+				fspc_cal_output_headers($teamname, $text);				
+				echo fspc_cache_file_get($cacheUrl . "&cache", FSPC_GET_CONTENTS, 3600, 'ics');
+			} else {
+	            $sportID = 0;
+	            $assocID = $_GET['assoc'];
+	            $clubID = $_GET['club'];
+	            $teamID = $_GET['team'];
+	
+	            $timecheck = array();
+	            $complist = $_GET['comps'];
+	            $teamname = '';
+	
+	            // Default start and end ranges if they're not specified.
+	            $startdate = '1900-01-01';
+	            $enddate = '2099-01-01';
+	
+	            // Now we grab the ranges from the URL if they exist.
+	            if ( isset($_GET['sd']) ) $startdate = $_GET['sd'];
+	            if ( isset($_GET['ed']) ) $enddate = $_GET['ed'];
+	
+	            // And we do the same for the game length.
+	            $gamelength = '';
+	            if ( isset($_GET['gl']) ) $gamelength = preg_replace('/[^0-9]*/', '', $_GET['gl']);
+	            if ( $gamelength == '' ) $gamelength = 45;
+	
+	            // And we do the same for the start offset.
+	            $startoffset = '';
+	            if ( isset($_GET['so']) ) $startoffset = preg_replace('/[^0-9]*/', '', $_GET['so']);
+	            if ( $startoffset == '' ) $startoffset = 0;
+	
+	            // And also our text variable for debugging.
+	            $text = false;
+	            if ( isset($_GET['t']) ) $text = true;
+	
+	            // And we create some date variables.
+	            $dstart = strtotime($startdate);
+	            $dend = strtotime($enddate . ' + 1 day - 1 second');
+	
+	            // This reference variable is used to check if all events occur in the past.
+	            // If they do, we'll force an update of the competition ID list in case a
+	            // team has been moved to a different divsion.
+	            $inpast = false;
+	
+	            $gamedata = fspc_fsp_parse_calendar($timecheck, $complist, $teamname, $dstart, $dend, $startoffset,
+	                                                $sportID, $assocID, $clubID, $teamID, $gamelength, $inpast);
+	
+	            // If at this point the team name is blank, and we have a club ID available, we'll check the
+	            // club name listed on the club page. Generally at this point it means we've got a data
+	            // issue anyway, but we still want some data showing if possible.
+	            if ( $teamname == '' ) $teamname = fspc_fsp_get_club_name($sportID, $assocID, $clubID);
+	            if ( $teamname == '' ) $teamname = $FSPC_DEFAULT_TEAM_NAME;
+	
+	            // We check if we have any elements returned from the calendar. If we don't, then they've
+	            // probably moved onto their next season. We need to rerun our competition check in that
+	            // case and try again. This only works when we have a club ID.
+	            $checkpast = true;
+	            if ( isset($_GET['s']) ) $checkpast = false;
+	
+	            if ( ( count($gamedata) == 0 || ($inpast && $checkpast) ) && $teamID > 0 ) {
+	                // First, we'll check the club page to see if the team is listed there. If they
+	                // are, we'll use that competition ID to determine the calendar events.
+	                $complist = '';
+	                if ( $clubID != '0' ) {
+	                    $complist = fspc_fsp_get_comps($sportID, $assocID, $clubID, $teamID);
+	                }
+	
+	                // If we don't have any identified competitions (or we don't have a valid club ID)
+	                // we'll then check the raw competition page for the association. This step takes a
+	                // couple of seconds per comp, so for large pages this will stall the refresh for
+	                // a couple of minutes.
+	                if ( $complist == '' ) {
+	                    $complist = fspc_fsp_get_all_comps($sportID, $assocID);
+	                    $comparray = explode('-', $complist);
+	                    $complist = '';
+	                    $checked = '';
+	
+	                    global $FSPC_MAX_COMP_CHECK;
+	                    $curcompcheck = 0;
+	
+	                    if ( isset($_GET['check']) ) $checked = $_GET['check'];
+	                    if ( isset($_GET['valid']) ) $complist = $_GET['valid'];
+	
+	                    foreach($comparray as $comp) {
+	                        if ( strpos($checked, $comp) === false ) {
+	                            $curcompcheck++;
+	                            $checked .= $comp . '-';
+	
+	                            if ( fspc_fsp_team_in_comp($sportID, $assocID, $comp, $teamID) ) {
+	                                $complist .= $comp . '-';
+	                            }
+	                        }
+	
+	                        // If we've hit the maximum competition checks on this pass, we add what's been checked
+	                        // to the URL and reload the calendar to continue with the next pass.
+	                        if ( $curcompcheck == $FSPC_MAX_COMP_CHECK ) {
+	                            $url = 'https://' . $_SERVER['HTTP_HOST'] . $_SERVER['REQUEST_URI'];
+	                            if ( strpos($url, '&check=') !== false ) {
+	                                $url = substr($url, 0, strpos($url, '&check='));
+	                            }
+	
+	                            $url .= '&check=' . $checked . '&valid=' . $complist;
+	                            header('Location: ' . $url);
+	                            return;
+	                        }
+	                    }
+	
+	                    if ( $complist != '' ) {
+	                        $complist = substr($complist, 0, strlen($complist) - 1);
+	                    }
+	                }
+	
+	                if ( $complist != '' ) {
+	                    $teamname = '';
+	                    $gamedata = fspc_fsp_parse_calendar($timecheck, $complist, $teamname, $dstart, $dend, $startoffset,
+	                                                        $sportID, $assocID, $clubID, $teamID, $gamelength, $inpast);
+	                    if ( $teamname == '' ) $teamname = fspc_fsp_get_club_name($sportID, $assocID, $clubID);
+	                    if ( $teamname == '' ) $teamname = $FSPC_DEFAULT_TEAM_NAME;
+	                }
+	
+	                // If we've actually got some gamedata now, we'll update the stored short URL
+	                // with the new compID values to avoid having to do this again.
+	                if ( count($gamedata) != 0 && $FSPC_YOURLS_ENABLE) {
+	                    // First we get the current short URL. Because YOURLS returns the same
+	                    // short URL if the URL already exists, we can use the existing shorten
+	                    // function to get this data.
+	                    $url = 'https://' . $_SERVER['HTTP_HOST'] . $_SERVER['REQUEST_URI'];
+	                    if ( strpos($url, '&check=') !== false ) {
+	                        $url = substr($url, 0, strpos($url, '&check='));
+	                    }
+	
+	                    $url = str_replace('&t=1', '', $url);
+	                    $url = str_replace('?t=1&', '?', $url);
+	
+	                    $url = str_replace('%2F', '/', $url);
+	                    $shorturl = fspc_yourls_get($url);
+	
+	                    $timezone = '';
+	                    if ( isset($_GET['tz']) ) $timezone = '&tz=' . $_GET['tz'];
+	                    $gamelength = '';
+	                    if ( isset($_GET['gl']) ) $gamelength = '&gl=' . $_GET['gl'];
+	                    $startoffset = '';
+	                    if ( isset($_GET['so']) ) $gamelength = '&so=' . $_GET['so'];
+	                    $extics = '';
+	                    if ( isset($_GET['ics']) ) $extics = '&ics=' . $_GET['ics'];
+	                    $clashmode = '';
+	                    if ( isset($_GET['cl']) ) $clashmode = '&cl=' . $_GET['cl'];
+	                    $startdate = '';
+	                    if ( isset($_GET['sd']) ) $startdate = '&sd=' . $_GET['sd'];
+	                    $enddate = '';
+	                    if ( isset($_GET['ed']) ) $enddate = '&ed=' . $_GET['ed'];
+	
+	                    $baseurl = 'https://' . $_SERVER['HTTP_HOST'] . $_SERVER['SCRIPT_NAME'];
+	                    $fullurl = $baseurl . '?assoc=' . $assocID . '&club=' . $clubID . '&team=' . $teamID . '&comps=' . $complist;
+	                    $fullurl .= $timezone . $gamelength . $extics . $clashmode . $startdate . $enddate;
+	
+	                    // If the short URL didn't match anything then don't update it.
+	                    if ( $shorturl != '' ) fspc_yourls_update($shorturl, $fullurl, $teamname . ' (FSPC)');
+	
+	                    // Now we redirect to the new URL. We check if the text variable is set to facilitate
+	                    // testing and ensure debugging data still shows up.
+	                    if ( $text ) {
+	                        header('Location: ' . $fullurl . '&s=1&t=1');
+	                    } else {
+	                        header('Location: ' . $fullurl . '&s=1');
+	                    }
+	
+	                    return;
+	                }
+	            }
+	
+	            // Now we grab the timezone data. If nothign is specified, we'll default to Melbourne.
+	            if ( isset($_GET['tz']) ) {
+	                $timezone = $_GET['tz'];
+	            } else {
+	                $timezone = 'Australia/Melbourne';
+	            }
+	
+	            // Next we'll get any external calendars, if we have them.
+	            $priority = 1;
+	            $extdata = array();
+	            $exttz = array();
+	
+	            if ( isset($_GET['ics']) ) {
+	                $shorticsid = explode('-', $_GET['ics']);
+	
+	                foreach ( $shorticsid as $shortics ) {
+	                    $extdata[$priority] = fspc_cal_parse_ext_calendar($timecheck, $shortics, $exttz, $timezone, $priority, $dstart, $dend);
+	                    $priority++;
+	                }
+	            }
+	
+	            // Now we output the calendar based on whatever fields we have available.
+	            $clash = '';
+	            if ( isset($_GET['cl']) ) $clash = preg_replace('/[^0-9]*/', '', $_GET['cl']);
+	            if ( $clash == '' ) $clash = 1;
+	
+				fspc_cal_output_headers($teamname, $text);
+				ob_start();
+	            fspc_cal_output_calendar($timecheck, $gamedata, $teamname, $timezone, $extdata, $exttz, $clash, $text);
+	            $calData = ob_get_flush();
+	            ob_end_clean();
+	            
+	            echo $calData;
+	            $cache = Cache::getInstance();
+	            $cache->putFile($cacheUrl, $calData, 'ics');
+	        }
+		}
+		
         // Finally, we show the footer, but only if we're not in iCal mode.
         if ( fspc_get_mode() != 2 ) {
             fspc_html_footer();
@@ -427,4 +448,5 @@
     }
 
     fspc_main();
+
 ?>

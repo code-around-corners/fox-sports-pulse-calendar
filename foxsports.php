@@ -436,7 +436,7 @@
             } else if ( strpos($location, 'Mary Mede Catholic') !== false ) {
                 $court = substr($location, strlen($location) - 1, 1);
                 $location = 'Marymede Catholic College (Court ' . $court . '), 60 Williamsons Rd, South Morang, VIC, 3752';
-            } else if ( strpos($location, 'Epping Leisure Centre') !== false ) {
+            } else if ( strpos($location, 'Leisure C') !== false ) {
                 $court = substr($location, strlen($location) - 2, 2);
                 $location = 'Epping Leisure Centre (Court ' . $court . '), 41-53 Miller Rd, Epping, VIC, 3076';
             } else if ( strpos($location, 'Darebin Community Sports Stadium') !== false ) {
@@ -444,7 +444,7 @@
                 $location = 'Darebin Community Sports Stadium (Court ' . $court . '), 857 Plenty Rd, Reservoir, VIC, 3073';
             } else if ( strpos($location, 'Keon Park Youth Club') !== false ) {
                 $court = 14;
-                $location = 'Keon Park Youth Club (Court ' . $court . '), Dole Avenue, Reservoir, VIC, 3073';
+                $location = 'Keon Park Youth Club (Court ' . $court . '), 8 Dole Avenue, Reservoir, VIC, 3073';
             }
         } else {
             $venueurl = fspc_fsp_gen_link(0, $assocID, 0, 0, 0, 0, 5);

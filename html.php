@@ -236,6 +236,8 @@ the link to your club page. Please try running the tool again with a different U
     // This is the function we use to display the calendar links to the user. It also generates
     // a QR code using Google to allow them to scan the calendar link.
     function fspc_html_show_links($shorturl, $texturl, $teamtweet) {
+
+        $shorturl = preg_replace("/http:\/\//", "", $shorturl);
 ?>
 
 <p>Use the following URLs to access the calendar for this team (URLs are now shortened using the cdac.link URL):</p>

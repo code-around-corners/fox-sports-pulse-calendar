@@ -19,6 +19,7 @@
      */
 
     include_once('simple_html_dom.php');
+    include_once('includes/cache.php');
 
     define('FSPC_BASE_CACHE_DIR', 'cache');
     define('FSPC_DEFAULT_CACHE_TIME', 3600);
@@ -28,47 +29,23 @@
     define('FSPC_GET_HTML', 2);
 
     function fspc_cache_file_get($url, $mode = FSPC_GET_CONTENTS, $cacheTime = FSPC_DEFAULT_CACHE_TIME, $category = '') {
+    	$cacheData = Cache::getInstance();
+    	$cacheData->setBaseDirectory(FSPC_BASE_CACHE_DIR);
+    	$cacheData->setCacheTime(FSPC_DEFAULT_CACHE_TIME);
+    	$cacheData->setRetryCount(FSPC_CACHE_RETRY);
+
         $noCache = isset($_GET['nocache']);
+		if ( $noCache ) $cacheTime = -1;
 
-        $cacheDir = FSPC_BASE_CACHE_DIR . '/';
-        if ( $category != '' ) $cacheDir .= $category . '/';
-        $cacheFile = $cacheDir . md5($url);
-
-        $isFileCached = file_exists($cacheFile);
-
-        if ( ! $noCache && ( $isFileCached && ( (time() - $cacheTime) < filemtime($cacheFile) ) ) ) {
-
-            if ( $mode == FSPC_GET_CONTENTS ) {
-                $html = file_get_contents($cacheFile);
-            } elseif ( $mode == FSPC_GET_HTML ) {
-                $html = file_get_html($cacheFile);
-            }
-
-        } else {
-
-            $html = null;
-            $retryCount = FSPC_CACHE_RETRY;
-
-            while ( ! $html && $retryCount > 0 ) {
-                $html = file_get_contents($url);
-                $retryCount--;
-            }
-
-            if ( $html ) {
-                if ( ! is_dir($cacheDir) ) mkdir($cacheDir, 0755, true);
-                file_put_contents($cacheFile, $html);
-            } elseif ( $isFileCached ) {
-                $html = file_get_html($cacheFile);
-            }
-
-            if ( $mode == FSPC_GET_HTML ) {
-                $html = str_get_html($html);
-            }
-
-        }
-
-        return $html;
-    }
+		$data = $cacheData->getFile($url, false, $category, $cacheTime);
+		
+		if ( $data ) {
+			if ( $mode == FSPC_GET_CONTENTS ) return $data;
+			if ( $mode == FSPC_GET_HTML ) return str_get_html($data);
+		}
+		
+		return null;
+	}
 
     function fspc_cache_get_timezone($timezone) {
         $timezone = str_replace('.', '', $timezone);

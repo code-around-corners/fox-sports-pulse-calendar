@@ -138,13 +138,9 @@
         return $extdata;
     }
 
-    // This function spits out the iCal calendar for the fixture. It also adds in events from external
-    // calendars if they've been specified. It does not return any data, but outputs the calendar to the
-    // web page.
-    function fspc_cal_output_calendar($timecheck, $gamedata, $teamname, $timezone, $extdata, $exttz,
-                                      $clash, $text = false) {
-        global $FSPC_FSP_BASE_URL;
-
+	// This function sends out the appropriate headers. We've split this out to allow the calendar
+	// content itself to be cached.
+	function fspc_cal_output_headers($teamname, $text = false) {
         if ( $text ) {
             header("Content-Type: text/plain");
         } else {
@@ -154,6 +150,16 @@
             header("Cache-Control: post-check=0, pre-check=0", false);
             header("Pragma: no-cache");
         }
+        
+        return;		
+	}
+	
+    // This function spits out the iCal calendar for the fixture. It also adds in events from external
+    // calendars if they've been specified. It does not return any data, but outputs the calendar to the
+    // web page.
+    function fspc_cal_output_calendar($timecheck, $gamedata, $teamname, $timezone, $extdata, $exttz,
+                                      $clash, $text = false) {
+        global $FSPC_FSP_BASE_URL;
 
         // As a precaution, we strip out any periods in the timezone. It shouldn't need them regardless,
         // and avoids someone trying to access the contents of the filesystem.

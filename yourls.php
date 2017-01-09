@@ -20,7 +20,9 @@
     
     // We need to include the config here to ensure we've got the YOURLS settings.
     include_once("config.php");
-    include_once("simple_html_dom.php");
+    
+    // We also turn on internal errors for LibXML to catch errors from YOURLS.
+    libxml_use_internal_errors(true);
 
     // This function is the generic API function. Other functions use this as a
     // wrapper.
@@ -41,7 +43,13 @@
         if ( $title != '' )    $yurl .= '&title=' . urlencode($title);
 
         // Finally we return a DOM object with the result.
-        return file_get_html($yurl);
+        $retval = @simplexml_load_file($yurl);
+        
+        if ( $retval === false ) {
+        	return null;
+        } else {
+        	return $retval;
+        }
     }
     
     // This function returns the URL for a short code.
@@ -58,9 +66,9 @@
         $yourls = fspc_yourls_api('shorturl', $url, NULL, $title);
 
         if ( $retkey ) {
-            return $yourls->find('keyword', 0)->plaintext;
+            return (string)$yourls->keyword;
         } else {
-            return $yourls->find('shorturl', 0)->plaintext;
+            return (string)$yourls->shorturl;
         }
     }
     
@@ -68,7 +76,7 @@
     // It depends on the geturl function to be available on the YOURLS API.
     function fspc_yourls_get($url) {
         $yourls = fspc_yourls_api('geturl', $url, NULL, NULL);
-        return $yourls->find('keyword', 0)->plaintext;
+        return (string)$yourls->keyword;
     }
     
     // This wrapper function will update the URL of the specified short code.
@@ -81,6 +89,6 @@
     // API rather than the build_url function.
     function fspc_yourls_expand($shorturl) {
         $yourls = fspc_yourls_api('expand', NULL, $shorturl, NULL);
-        return $yourls->find('longurl', 0)->plaintext;
+        return (string)$yourls->longurl;
     } 
 ?>
