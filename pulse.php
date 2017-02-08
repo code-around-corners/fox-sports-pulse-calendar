@@ -251,8 +251,8 @@
             $cacheUrl = $baseurl . '?assoc=' . $assocID . '&club=' . $clubID . '&team=' . $teamID . '&comps=' . $complist;
             $cacheUrl .= $timezone . $gamelength . $extics . $clashmode . $startdate . $enddate;
 
-			if ( isset($_GET["assoc"]) && ! isset($_GET["cache"]) ) {
-	            $teamname = fspc_fsp_get_club_name($sportID, $assocID, $clubID);
+			if ( isset($_GET["assoc"]) && ! isset($_GET["cache"]) && ! isset($_GET["nocache"])) {
+                $teamname = fspc_fsp_get_club_name($sportID, $assocID, $clubID);
 	            if ( $teamname == '' ) $teamname = $FSPC_DEFAULT_TEAM_NAME;
 				$text = isset($_GET["t"]);
 				
@@ -341,7 +341,7 @@
 	            // case and try again. This only works when we have a club ID.
 	            $checkpast = true;
 	            if ( isset($_GET['s']) ) $checkpast = false;
-	
+
 	            if ( ( count($gamedata) == 0 || ($inpast && $checkpast) ) && $teamID > 0 ) {
 	                // First, we'll check the club page to see if the team is listed there. If they
 	                // are, we'll use that competition ID to determine the calendar events.

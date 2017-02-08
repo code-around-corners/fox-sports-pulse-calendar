@@ -85,11 +85,13 @@ class Cache {
         	}
         }
 
+        if ( $cacheTime == -1 ) $cacheTime = $this->cacheTime;
+
 		// We also check if the file already exists in the cache, and determine what the current expiry
 		// time would be based on the cache settings.
         $isFileCached = file_exists($cacheFile);
-		$cacheExpires = time() - $this->cacheTime - (rand(0, $this->cacheDrift));
-		
+		$cacheExpires = time() - $cacheTime - (rand(0, $this->cacheDrift));
+
 		// If the forceRefresh option is set, we always grab a new copy of the file. Otherwise, we
 		// check the last modified time for the file against the expiry time above, and if it hasn't
 		// passed we simply return our current copy of the file.

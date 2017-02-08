@@ -36,7 +36,10 @@
     	$cacheData->setCacheDrift(600);
 
         $noCache = isset($_GET['nocache']);
-		if ( $noCache ) $cacheTime = -1;
+        if ( $noCache ) {
+            $cacheTime = 0;
+            $cacheData->setCacheDrift(0);
+        }
 
 		$data = $cacheData->getFile($url, false, $category, $cacheTime);
 		
