@@ -385,6 +385,8 @@
 	                            }
 	
 	                            $url .= '&check=' . $checked . '&valid=' . $complist . '&cache&continue';
+                                if ( isset($_GET['nocache']) ) $url .= '&nocache';
+
 	                            header('Location: ' . $url);
 	                            return;
 	                        }
@@ -444,7 +446,9 @@
 	
 	                    // Now we redirect to the new URL. We check if the text variable is set to facilitate
 	                    // testing and ensure debugging data still shows up.
-	                    if ( $text ) {
+	                    if ( isset($_GET['nocache']) ) $fullurl .= '&nocache';
+
+                        if ( $text ) {
 	                        header('Location: ' . $fullurl . '&s=1&t=1&cache&continue');
 	                    } else {
 	                        header('Location: ' . $fullurl . '&s=1&cache&continue');
