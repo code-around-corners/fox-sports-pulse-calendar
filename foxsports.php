@@ -445,7 +445,7 @@
             } else if ( strpos($location, 'Keon Park Youth Club') !== false ) {
                 $court = 14;
                 $location = 'Keon Park Youth Club (Court ' . $court . '), 8 Dole Avenue, Reservoir, VIC, 3073';
-            } else if ( strpos($location, 'Mernda Central') !== false ) {
+            } else if ( strpos($location, 'Mernda') !== false ) {
                 $court = substr($location, strlen($location) - 2, 2);
                 $location = 'Mernda Central College (Court ' . $court . '), 70 Breadalbane Ave, Mernda, VIC, 3754';
             }
