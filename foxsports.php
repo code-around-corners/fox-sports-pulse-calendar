@@ -445,10 +445,12 @@
             } else if ( strpos($location, 'Keon Park Youth Club') !== false ) {
                 $court = 14;
                 $location = 'Keon Park Youth Club (Court ' . $court . '), 8 Dole Avenue, Reservoir, VIC, 3073';
-            } else if ( strpos($location, 'Mernda') !== false ) {
+            } else if ( strpos($location, 'Mernda Central') !== false ) {
                 $court = substr($location, strlen($location) - 2, 2);
                 $location = 'Mernda Central College (Court ' . $court . '), 70 Breadalbane Ave, Mernda, VIC, 3754';
-            }
+            } else if ( strpos($location, 'Mernda Park') !== false ) {
+                $court = substr($location, strlen($location) - 2, 2);
+                $location = 'Mernda Park Primary School (Court ' . $court . '), 40 Riverdale Blvd, Mernda, VIC, 3754';
         } else {
             $venueurl = fspc_fsp_gen_link(0, $assocID, 0, 0, 0, 0, 5);
             $venuehtml = fspc_cache_file_get($venueurl, FSPC_GET_HTML, FSPC_DEFAULT_CACHE_TIME, 'fsp');
