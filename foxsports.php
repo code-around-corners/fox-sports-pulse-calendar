@@ -451,6 +451,7 @@
             } else if ( strpos($location, 'Mernda Park') !== false ) {
                 $court = substr($location, strlen($location) - 2, 2);
                 $location = 'Mernda Park Primary School (Court ' . $court . '), 40 Riverdale Blvd, Mernda, VIC, 3754';
+           }
         } else {
             $venueurl = fspc_fsp_gen_link(0, $assocID, 0, 0, 0, 0, 5);
             $venuehtml = fspc_cache_file_get($venueurl, FSPC_GET_HTML, FSPC_DEFAULT_CACHE_TIME, 'fsp');
