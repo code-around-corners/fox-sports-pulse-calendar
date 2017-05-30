@@ -237,7 +237,7 @@
             $gamelength = '';
             if ( isset($_GET['gl']) ) $gamelength = '&gl=' . $_GET['gl'];
             $startoffset = '';
-            if ( isset($_GET['so']) ) $gamelength = '&so=' . $_GET['so'];
+            if ( isset($_GET['so']) ) $startoffset = '&so=' . $_GET['so'];
             $extics = '';
             if ( isset($_GET['ics']) ) $extics = '&ics=' . $_GET['ics'];
             $clashmode = '';
@@ -249,7 +249,7 @@
 
             $baseurl = 'http' . (empty($_SERVER['HTTPS']) ? "" : "s") . '://' . $_SERVER['HTTP_HOST'] . $_SERVER['SCRIPT_NAME'];
             $cacheUrl = $baseurl . '?assoc=' . $assocID . '&club=' . $clubID . '&team=' . $teamID . '&comps=' . $complist;
-            $cacheUrl .= $timezone . $gamelength . $extics . $clashmode . $startdate . $enddate;
+            $cacheUrl .= $timezone . $gamelength . $startoffset . $extics . $clashmode . $startdate . $enddate;
 
 			if ( isset($_GET["assoc"]) && ! isset($_GET["cache"]) && ! isset($_GET["nocache"])) {
                 $teamname = fspc_fsp_get_club_name($sportID, $assocID, $clubID);
@@ -343,13 +343,13 @@
 	            if ( isset($_GET['s']) ) $checkpast = false;
 
 	            if ( ( count($gamedata) == 0 || ($inpast && $checkpast) ) && $teamID > 0 ) {
-	                // First, we'll check the club page to see if the team is listed there. If they
+                    // First, we'll check the club page to see if the team is listed there. If they
 	                // are, we'll use that competition ID to determine the calendar events.
 	                $complist = '';
 	                if ( $clubID != '0' ) {
 	                    $complist = fspc_fsp_get_comps($sportID, $assocID, $clubID, $teamID);
 	                }
-	
+
 	                // If we don't have any identified competitions (or we don't have a valid club ID)
 	                // we'll then check the raw competition page for the association. This step takes a
 	                // couple of seconds per comp, so for large pages this will stall the refresh for
@@ -420,8 +420,22 @@
 	                    $url = str_replace('?t=1&', '?', $url);
 	
 	                    $url = str_replace('%2F', '/', $url);
+
+                        $url = str_replace('pulse-dev', 'pulse', $url);
+                        $url = str_replace('&cache', '', $url);
+
 	                    $shorturl = fspc_yourls_get($url);
-	
+
+                        if ( $shorturl == '' ) {
+                            if ( substr($url, 0, 5) == "https" ) {
+                                $url = str_replace("https://", "http://", $url);
+                            } else {
+                                $url = str_replace("http://", "https://", $url);
+                            }
+
+                            $shorturl = fspc_yourls_get($url);
+                        }
+
 	                    $timezone = '';
 	                    if ( isset($_GET['tz']) ) $timezone = '&tz=' . $_GET['tz'];
 	                    $gamelength = '';
