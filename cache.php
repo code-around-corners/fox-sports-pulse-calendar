@@ -28,21 +28,27 @@
     define('FSPC_GET_CONTENTS', 1);
     define('FSPC_GET_HTML', 2);
 
+    define('FSPC_NO_FSP_CACHE', true);
+
     function fspc_cache_file_get($url, $mode = FSPC_GET_CONTENTS, $cacheTime = FSPC_DEFAULT_CACHE_TIME, $category = '') {
-    	$cacheData = Cache::getInstance();
-    	$cacheData->setBaseDirectory(FSPC_BASE_CACHE_DIR);
-    	$cacheData->setCacheTime(FSPC_DEFAULT_CACHE_TIME);
-    	$cacheData->setRetryCount(FSPC_CACHE_RETRY);
-    	$cacheData->setCacheDrift(600);
+        if ( FSPC_NO_FSP_CACHE && $category == 'fsp' ) {
+            $data = file_get_contents($url);
+        } else {
+        	$cacheData = Cache::getInstance();
+        	$cacheData->setBaseDirectory(FSPC_BASE_CACHE_DIR);
+    	    $cacheData->setCacheTime(FSPC_DEFAULT_CACHE_TIME);
+    	    $cacheData->setRetryCount(FSPC_CACHE_RETRY);
+    	    $cacheData->setCacheDrift(600);
 
-        $noCache = isset($_GET['nocache']);
-        if ( $noCache ) {
-            $cacheTime = 0;
-            $cacheData->setCacheDrift(0);
-        }
+            $noCache = isset($_GET['nocache']);
+            if ( $noCache ) {
+                $cacheTime = 0;
+                $cacheData->setCacheDrift(0);
+            }
 
-		$data = $cacheData->getFile($url, false, $category, $cacheTime);
-		
+		    $data = $cacheData->getFile($url, false, $category, $cacheTime);
+		}
+
 		if ( $data ) {
 			if ( $mode == FSPC_GET_CONTENTS ) return $data;
 			if ( $mode == FSPC_GET_HTML ) return str_get_html($data);
