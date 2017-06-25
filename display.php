@@ -30,7 +30,9 @@ table {
 }
 
 td {
+    -webkit-text-size-adjust: 100%;
     padding: 5px;
+    font-size: 12px;
 }
 
 a {
@@ -136,7 +138,7 @@ $today = date("Ymd\THis");
 
 for ( $x = 0; $x < count($events); $x++ ) {
 	if ( $events[$x]['endDate'] > $today ) {
-		echo '<tr>';
+		echo '<tr>' . "\n";
 
         echo '<td width="30%">';
         if ( strpos($events[$x]['summary'], '(Bye)') === false ) {
@@ -144,7 +146,7 @@ for ( $x = 0; $x < count($events); $x++ ) {
         } else {
             echo date('D, M j, Y', strtotime($events[$x]['startDate']));
         }
-        echo '</td>';
+        echo '</td>' . "\n";
 
         if ( $events[$x]['url'] != '' ) {
 		    echo '<td><b><a href="' . $events[$x]['url'] . '">' . $events[$x]['summary'] . '</a></b><br />';
@@ -152,8 +154,8 @@ for ( $x = 0; $x < count($events); $x++ ) {
             echo '<td><b>' . $events[$x]['summary'] . '</b><br />';
         }
 
-		echo $events[$x]['location'] . '</td>';
-		echo '</tr>';
+		echo $events[$x]['location'] . '</td>' . "\n";
+		echo '</tr>' . "\n";
 	}
 }
 
@@ -170,7 +172,7 @@ for ( $x = 0; $x < count($events); $x++ ) {
 
 for ( $x = 0; $x < count($events); $x++ ) {
 	if ( $events[$x]['endDate'] <= $today ) {
-		echo '<tr>';
+		echo '<tr>' . "\n";
 
         echo '<td width="30%">';
         if ( strpos($events[$x]['summary'], '(Bye)') === false ) {
@@ -178,7 +180,7 @@ for ( $x = 0; $x < count($events); $x++ ) {
         } else {
             echo date('D, M j, Y', strtotime($events[$x]['startDate']));
         }
-        echo '</td>';
+        echo '</td>' . "\n";
 
         if ( $events[$x]['url'] != '' ) {
 		    echo '<td><b><a href="' . $events[$x]['url'] . '">' . $events[$x]['summary'] . '</a></b><br />';
@@ -186,8 +188,8 @@ for ( $x = 0; $x < count($events); $x++ ) {
             echo '<td><b>' . $events[$x]['summary'] . '</b><br />';
         }
 
-		echo $events[$x]['location'] . '</td>';
-		echo '</tr>';
+		echo $events[$x]['location'] . '</td>' . "\n";
+		echo '</tr>' . "\n";
 	}
 }
 
