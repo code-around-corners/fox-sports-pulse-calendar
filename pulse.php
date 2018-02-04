@@ -256,7 +256,7 @@
 	            if ( $teamname == '' ) $teamname = $FSPC_DEFAULT_TEAM_NAME;
 				$text = isset($_GET["t"]);
 				
-				$data = fspc_cache_file_get($cacheUrl . "&cache", FSPC_GET_CONTENTS, 3600, 'ics');
+				$data = fspc_cache_file_get($cacheUrl . "&cache", FSPC_GET_CONTENTS, 14400, 'ics');
 
 				if ( $data ) {
 					fspc_cal_output_headers($teamname, $text);

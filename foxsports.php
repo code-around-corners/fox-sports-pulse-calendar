@@ -312,14 +312,14 @@
         $gamedata = array();
         $inpast = true;
 
-    // If the team ID is zero, we just return an empty array. This allows a URL to have
-    // a placeholder value in the event that the external calendars are ready but the
-    // FSP calendar isn't ready.
-    if ( $teamID == 0 ) return $gamedata;
+	    // If the team ID is zero, we just return an empty array. This allows a URL to have
+	    // a placeholder value in the event that the external calendars are ready but the
+	    // FSP calendar isn't ready.
+	    if ( $teamID == 0 ) return $gamedata;
 
         foreach($compID as $comp) {
             $teamurl = fspc_fsp_gen_link($sportID, $assocID, $clubID, $comp, $teamID, 0, 1);
-            $teamhtml = fspc_cache_file_get($teamurl, FSPC_GET_HTML, FSPC_DEFAULT_CACHE_TIME, 'fsp');
+            $teamhtml = str_get_html(fspc_cache_file_get($teamurl, FSPC_GET_CONTENTS, FSPC_DEFAULT_CACHE_TIME, 'fsp'));
 
             if ( $teamname == '' ) $teamname = fspc_fsp_get_team_name_from_html($teamhtml);
 
@@ -409,10 +409,14 @@
                         $rounddata['gameurl'] = $gameurl;
 
                         $gamedata[$dtstamp] = $rounddata;
+                        unset($rounddata);
                         $timecheck[$dtstamp] = 1;
                     }
                 }
             }
+            
+            $teamhtml->clear();
+            unset($teamhtml);
         }
 
         return $gamedata;
