@@ -19,7 +19,7 @@
      */
     
     $FSPC_MAJOR_VERSION = 1;
-    $FSPC_MINOR_VERSION = 5;
+    $FSPC_MINOR_VERSION = 6;
     
     // This function returns the version number. If a git branch is found,
     // we'll also pull in the last git commit ID.
@@ -33,7 +33,7 @@
        
         $version = $major . '.' . $minor;
  
-        if ( ($git = file_get_contents('.git/HEAD')) !== false ) {
+        if ( ($git = @file_get_contents('.git/HEAD')) !== false ) {
             $file = substr($git, 5, strlen($git) - 6);
             $gitid = file_get_contents('.git/' . $file);
             $version .= '-' . substr($gitid, 0, 10);

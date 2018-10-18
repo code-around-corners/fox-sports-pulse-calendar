@@ -269,24 +269,6 @@
 					return;
 				}
 			} else {
-				if ( ! isset($_GET["continue"]) ) {
-					$retryCount = 3;
-					while ( fspc_get_active_pids() > 3 && $retryCount > 0 ) {
-						sleep(10);
-						$retryCount--;
-					}
-					
-					if ( $retryCount > 0 ) {
-					    fspc_set_pid_file();
-					} else {
-						header('HTTP/1.1 503 Service Temporarily Unavailable');
-						header('Status: 503 Service Temporarily Unavailable');
-						header('Retry-After: 30');
-						
-						return;
-					}
-				}
-				
 	            $sportID = 0;
 	            $assocID = $_GET['assoc'];
 	            $clubID = $_GET['club'];
@@ -354,7 +336,8 @@
 	                // we'll then check the raw competition page for the association. This step takes a
 	                // couple of seconds per comp, so for large pages this will stall the refresh for
 	                // a couple of minutes.
-	                if ( $complist == '' ) {
+
+	                if ( $complist == '' && false ) {
 	                    $complist = fspc_fsp_get_all_comps($sportID, $assocID);
 	                    $comparray = explode('-', $complist);
 	                    $complist = '';
@@ -463,9 +446,9 @@
 	                    if ( isset($_GET['nocache']) ) $fullurl .= '&nocache';
 
                         if ( $text ) {
-	                        header('Location: ' . $fullurl . '&s=1&t=1&cache&continue');
+	                        header('Location: ' . $fullurl . '&s=1&t=1&cache');
 	                    } else {
-	                        header('Location: ' . $fullurl . '&s=1&cache&continue');
+	                        header('Location: ' . $fullurl . '&s=1&cache');
 	                    }
 	
 	                    return;
@@ -500,7 +483,6 @@
 	
 				fspc_cal_output_headers($teamname, $text);
 	            fspc_cal_output_calendar($timecheck, $gamedata, $teamname, $timezone, $extdata, $exttz, $clash, $text);
-			    fspc_clear_pid_file();
 	        }
 		}
 		
@@ -510,43 +492,6 @@
         }
     }
     
-    function fspc_is_pid_running($pid) {
-	    $isRunning = false;
-	    exec("ps -A | grep -i $pid | grep -v grep", $pids);
-
-	    if ( count($pids) > 0 ) $isRunning = true;
-	    return $isRunning;
-    }
-    
-    function fspc_get_active_pids() {
-		if ( ! is_dir("pid") ) {
-			mkdir("pid", 0755, true);
-    		return 0;
-    	}
-    	
-    	$activeCount = 0;
-    	
-    	foreach ( glob("pid/*.pid") as $pidFile ) {
-    		if ( fspc_is_pid_running(substr($pidFile, 4, strlen($pidFile) - 8)) ) {
-    			$activeCount++;
-    		} else {
-    			@unlink($pidFile);
-    		}
-    	}
-    	
-    	return $activeCount;
-    }
-    
-    function fspc_set_pid_file() {
-    	$pidFile = "pid/" . posix_getpid() . ".pid";
-    	file_put_contents($pidFile, posix_getpid());
-    }
-    
-    function fspc_clear_pid_file() {
-    	$pidFile = "pid/" . posix_getpid() . ".pid";
-		@unlink($pidFile);    	
-    }
-
 	fspc_main();
 
 ?>

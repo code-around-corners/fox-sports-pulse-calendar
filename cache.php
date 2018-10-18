@@ -19,34 +19,46 @@
      */
 
     include_once('simple_html_dom.php');
-    include_once('includes/cache.php');
 
-    define('FSPC_BASE_CACHE_DIR', 'cache');
-    define('FSPC_DEFAULT_CACHE_TIME', 10800);
-    define('FSPC_CACHE_RETRY', 3);
-
+    define('FSPC_DEFAULT_CACHE_TIME', 86400);
     define('FSPC_GET_CONTENTS', 1);
     define('FSPC_GET_HTML', 2);
 
-    define('FSPC_NO_FSP_CACHE', true);
-
     function fspc_cache_file_get($url, $mode = FSPC_GET_CONTENTS, $cacheTime = FSPC_DEFAULT_CACHE_TIME, $category = '') {
-        if ( FSPC_NO_FSP_CACHE && $category == 'fsp' ) {
-            $data = file_get_contents($url);
-        } else {
-        	$cacheData = Cache::getInstance();
-        	$cacheData->setBaseDirectory(FSPC_BASE_CACHE_DIR);
-    	    $cacheData->setCacheTime(FSPC_DEFAULT_CACHE_TIME);
-    	    $cacheData->setRetryCount(FSPC_CACHE_RETRY);
-    	    $cacheData->setCacheDrift(600);
-
-            $noCache = isset($_GET['nocache']);
-            if ( $noCache ) {
-                $cacheTime = 0;
-                $cacheData->setCacheDrift(0);
-            }
-
-		    $data = $cacheData->getFile($url, false, $category, $cacheTime);
+	    global $FSPC_DB_NAME;
+	    global $FSPC_DB_USER;
+	    global $FSPC_DB_PASS;
+	    
+		$conn = new mysqli($FSPC_DB_NAME, $FSPC_DB_USER, $FSPC_DB_PASS, 'pulse');
+    
+        $sql = "Select cacheId, cacheExpires, data From cache Where url = '" . $url . "' And category = '" . $category . "';";
+        $result = $conn->query($sql);
+		$isCached = false;
+		$data = null;
+		
+		if ( $result->num_rows > 0 ) {
+		    $row = $result->fetch_assoc();
+		    $cacheExpires = $row["cacheExpires"];
+		    $data = $row["data"];
+		    
+		    if ( $cacheExpires > time() ) {
+			    $isCached = true;
+		    } else {
+			    $sql = "Delete From cache Where cacheId = " . $row["cacheId"] . ";";
+			    $conn->query($sql);
+		    }
+		}
+		
+		$noCache = isset($_GET['nocache']);
+		
+		if ( ! $isCached || $noCache ) {
+			$data = file_get_contents($url);
+			
+			if ( $data ) {
+				$sql = "Insert Into cache ( url, category, data, cacheExpires ) Values ( '" . $url . "', '" . $category . "', '" .
+					$conn->real_escape_string($data) . "', " . (time() + $cacheTime) . " );";
+				$conn->query($sql);
+			}
 		}
 
 		if ( $data ) {
@@ -59,35 +71,16 @@
 
     function fspc_cache_get_timezone($timezone) {
         $timezone = str_replace('.', '', $timezone);
-        $cacheDir = 'tz/' . substr($timezone, 0, strrpos($timezone, '/'));
-        $cacheFile = 'tz/' . $timezone . '.ics';
+        $url = 'http://tzurl.org/zoneinfo-outlook/' . $timezone . '.ics';
+        
+        $ics = fspc_cache_file_get($url, FSPC_GET_CONTENTS, 86400, 'timezone');
 
-        $isFileCached = file_exists($cacheFile);
-
-        if ( $isFileCached && ( (time() - 86400) < filemtime($cacheFile) ) ) {
-            $ics = file_get_contents($cacheFile);
-        } else {
-            $ics = null;
-            $retryCount = FSPC_CACHE_RETRY;
-
-            while ( ! $ics && $retryCount > 0 ) {
-                $ics = file_get_contents('http://tzurl.org/zoneinfo-outlook/' . $timezone . '.ics');
-                $retryCount--;
-            }
-
-            if ( $ics ) {
-                $startPos = strpos($ics, 'BEGIN:VTIMEZONE');
-                $endPos = strpos($ics, 'END:VTIMEZONE');
-
-                $ics = substr($ics, $startPos, $endPos - $startPos + 15);
-
-                if ( ! is_dir($cacheDir) ) mkdir($cacheDir, 0755, true);
-                file_put_contents($cacheFile, $ics);
-            } elseif ( $isFileCached ) {
-                $ics = file_get_contents($cacheFile);
-            }
-        }
-
+		if ( $ics ) {
+	        $startPos = strpos($ics, 'BEGIN:VTIMEZONE');
+	        $endPos = strpos($ics, 'END:VTIMEZONE');	
+	        $ics = substr($ics, $startPos, $endPos - $startPos + 15);
+	    }
+	       
         return $ics;
     }
 

@@ -85,7 +85,7 @@
     // This function gets a list of all the valid pool IDs for a specific competition.
     // Use the fspc_fsp_gen_link function to generate a type 4 link with pool = 0.
     function fspc_fsp_get_pools($url) {
-        $pools = fspc_cache_file_get($url, FSPC_GET_HTML, FSPC_DEFAULT_CACHE_TIME, 'fsp');
+        $pools = fspc_cache_file_get($url, FSPC_GET_HTML, 604800, 'fsp');
         $poolId = array();
         $poolCount = 0;
         $poolId[0] = -1;
@@ -111,7 +111,7 @@
     //
     // Returns the club ID if found, or a zero if it doesn't.
     function fspc_fsp_get_clubid($url) {
-        $findclubid = fspc_cache_file_get($url, FSPC_GET_CONTENTS, FSPC_DEFAULT_CACHE_TIME, 'fsp');
+        $findclubid = fspc_cache_file_get($url, FSPC_GET_CONTENTS, 604800, 'fsp');
 
         if ( preg_match('/clubID=[0-9]*/i', $findclubid, $matched) == 1 ) {
             return substr($matched[0], 7, strlen($matched[0]) - 7);
@@ -128,7 +128,7 @@
     // if matches are found.
     function fspc_fsp_get_comps($sportID, $assocID, $clubID, $teamID) {
         $cluburl = fspc_fsp_gen_link($sportID, $assocID, $clubID, 0, 0, 0, 0);
-        $clubhtml = fspc_cache_file_get($cluburl, FSPC_GET_HTML, FSPC_DEFAULT_CACHE_TIME, 'fsp');
+        $clubhtml = fspc_cache_file_get($cluburl, FSPC_GET_HTML, 604800, 'fsp');
         $elem = $clubhtml->find('div[class=club-team-list]', 0);
 
         $complist = '';
@@ -160,7 +160,7 @@
             $teamname = '';
         } else {
             $url = fspc_fsp_gen_link($sportID, $assocID, $clubID, 0, 0, 0, 1);
-            $html = fspc_cache_file_get($url, FSPC_GET_HTML, FSPC_DEFAULT_CACHE_TIME, 'fsp');
+            $html = fspc_cache_file_get($url, FSPC_GET_HTML, 604800, 'fsp');
 
             $div = $html->find("div[class=historybar-left]", 0);
 
@@ -180,7 +180,7 @@
     // Returns the team name as a string if found, or a blank string if it's not.
     function fspc_fsp_get_team_name($sportID, $assocID, $clubID, $compID, $teamID) {
         $url = fspc_fsp_gen_link($sportID, $assocID, $clubID, $compID, $teamID, 0, 1);
-        $teamhtml = fspc_cache_file_get($url, FSPC_GET_HTML, FSPC_DEFAULT_CACHE_TIME, 'fsp');
+        $teamhtml = fspc_cache_file_get($url, FSPC_GET_HTML, 604800, 'fsp');
 
         return fspc_fsp_get_team_name_from_html($teamhtml);
     }
@@ -210,7 +210,7 @@
         global $FSPC_FSP_BASE_URL;
 
         $url = fspc_fsp_gen_link($sportID, $assocID, 0, 0, 0, 0, 2);
-        $html = fspc_cache_file_get($url, FSPC_GET_HTML, FSPC_DEFAULT_CACHE_TIME, 'fsp');
+        $html = fspc_cache_file_get($url, FSPC_GET_HTML, 604800, 'fsp');
         $complist = '';
 
         $seasonlist = '0';
@@ -227,7 +227,7 @@
         $seasonids = explode('-', $seasonlist);
 
         foreach($seasonids as $seasonid) {
-            $html = fspc_cache_file_get($url . '&seasonID=' . $seasonid, FSPC_GET_HTML, FSPC_DEFAULT_CACHE_TIME, 'fsp');
+            $html = fspc_cache_file_get($url . '&seasonID=' . $seasonid, FSPC_GET_HTML, 604800, 'fsp');
 
             foreach($html->find('table[class=tableClass]') as $comps) {
                 foreach($comps->find('td[class=flr-list-nav]') as $comp) {
@@ -258,7 +258,7 @@
         
         foreach($poolIds as $poolId) {
             $url = fspc_fsp_gen_link($sportID, $assocID, 0, $compID, 0, $poolId, 4);
-            $html = fspc_cache_file_get($url, FSPC_GET_CONTENTS, FSPC_DEFAULT_CACHE_TIME, 'fsp');
+            $html = fspc_cache_file_get($url, FSPC_GET_CONTENTS, 604800, 'fsp');
             if ( strpos($html, 'id=' . $teamID) !== false ) return true;
         }
         
@@ -458,7 +458,7 @@
            }
         } else {
             $venueurl = fspc_fsp_gen_link(0, $assocID, 0, 0, 0, 0, 5);
-            $venuehtml = fspc_cache_file_get($venueurl, FSPC_GET_HTML, FSPC_DEFAULT_CACHE_TIME, 'fsp');
+            $venuehtml = fspc_cache_file_get($venueurl, FSPC_GET_HTML, 604800, 'fsp');
             $venueaddress = '';
 
             foreach($venuehtml->find('table[class=tableClass]', 0)->find('tr') as $venue) {

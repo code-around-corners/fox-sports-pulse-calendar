@@ -50,4 +50,8 @@
     // Turn this on to enable debugging. (Boolean)
     $FSPC_DEBUG = false;
     
+    // This is the database the cache is stored in.
+    $FSPC_DB_NAME = '';
+    $FSPC_DB_USER = '';
+    $FSPC_DB_PASS = '';
 ?>
