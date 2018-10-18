@@ -25,11 +25,12 @@
     define('FSPC_GET_HTML', 2);
 
     function fspc_cache_file_get($url, $mode = FSPC_GET_CONTENTS, $cacheTime = FSPC_DEFAULT_CACHE_TIME, $category = '') {
-	    global $FSPC_DB_NAME;
+        global $FSPC_DB_SERVER;
+        global $FSPC_DB_NAME;
 	    global $FSPC_DB_USER;
 	    global $FSPC_DB_PASS;
 	    
-		$conn = new mysqli($FSPC_DB_NAME, $FSPC_DB_USER, $FSPC_DB_PASS, 'pulse');
+		$conn = new mysqli($FSPC_DB_SERVER, $FSPC_DB_USER, $FSPC_DB_PASS, $FSPC_DB_NAME);
     
         $sql = "Select cacheId, cacheExpires, data From cache Where url = '" . $url . "' And category = '" . $category . "';";
         $result = $conn->query($sql);
