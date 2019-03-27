@@ -74,6 +74,7 @@ a {
 <?php
 
 include_once("yourls.php");
+include_once("cache.php");
 
 date_default_timezone_set("UTC");
 
@@ -83,7 +84,11 @@ ini_set('display_errors', '1');
 $shortcode = $_GET['code'];
 $fullurl = str_replace("&amp;", "&", fspc_yourls_expand($shortcode));
 
-$ical = file_get_contents($fullurl);
+$ical = fspc_cache_get($fullurl . "&cache", 'ics');
+if ( ! $ical ) {
+	$ical = file_get_contents($fullurl);
+}
+
 $array = explode("\r\n", $ical);
 
 $inEvent = false;

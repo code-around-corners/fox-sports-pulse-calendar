@@ -24,41 +24,70 @@
     define('FSPC_GET_CONTENTS', 1);
     define('FSPC_GET_HTML', 2);
 
-    function fspc_cache_file_get($url, $mode = FSPC_GET_CONTENTS, $cacheTime = FSPC_DEFAULT_CACHE_TIME, $category = '') {
+	function fspc_cache_get($key, $group) {
         global $FSPC_DB_SERVER;
         global $FSPC_DB_NAME;
 	    global $FSPC_DB_USER;
 	    global $FSPC_DB_PASS;
-	    
-		$conn = new mysqli($FSPC_DB_SERVER, $FSPC_DB_USER, $FSPC_DB_PASS, $FSPC_DB_NAME);
-    
-        $sql = "Select cacheId, cacheExpires, data From cache Where url = '" . $url . "' And category = '" . $category . "';";
-        $result = $conn->query($sql);
-		$isCached = false;
+
 		$data = null;
+		$isCached = false;
+		$conn = new mysqli($FSPC_DB_SERVER, $FSPC_DB_USER, $FSPC_DB_PASS, $FSPC_DB_NAME);
+
+        $sql = "Select cacheId, cacheExpires, data From cache Where cacheKey = '" . $key . "' And cacheGroup = '" . $group . "';";
+        $result = $conn->query($sql);
 		
 		if ( $result->num_rows > 0 ) {
 		    $row = $result->fetch_assoc();
 		    $cacheExpires = $row["cacheExpires"];
-		    $data = $row["data"];
-		    
+			$data = $row["data"];
+
+			mysqli_free_result($result);
+			    
 		    if ( $cacheExpires > time() ) {
-			    $isCached = true;
-		    } else {
-			    $sql = "Delete From cache Where cacheId = " . $row["cacheId"] . ";";
-			    $conn->query($sql);
+				$isCached = true;
+				$data = $row['data'];
+		   	} else {
+				$sql = "Delete From cache Where cacheId = " . $row["cacheId"] . ";";
+				$conn->query($sql);
 		    }
 		}
+
+		$conn->close();
+
+		return $data;
+	}
+
+	function fspc_cache_set($key, $group, $data, $cacheTime) {
+        global $FSPC_DB_SERVER;
+        global $FSPC_DB_NAME;
+	    global $FSPC_DB_USER;
+	    global $FSPC_DB_PASS;
 		
+		$conn = new mysqli($FSPC_DB_SERVER, $FSPC_DB_USER, $FSPC_DB_PASS, $FSPC_DB_NAME);
+		
+		$sql = "Insert Into cache ( cacheKey, cacheGroup, data, cacheExpires ) Values ( '" . $key . "', '" . $group . "', '" .
+			$conn->real_escape_string($data) . "', " . (time() + $cacheTime) . " );";
+		$conn->query($sql);
+		$conn->close();
+	}
+
+    function fspc_cache_file_get($url, $mode = FSPC_GET_CONTENTS, $cacheTime = FSPC_DEFAULT_CACHE_TIME, $category = '') {
 		$noCache = isset($_GET['nocache']);
+		if ( $category != 'ics' ) $noCache = true;
+		$data = null;
+		$isCached = false;
+
+		if ( ! $noCache ) {
+			$data = fspc_cache_get($url, $category);
+			if ( $data ) $isCached = true;
+		}
 		
 		if ( ! $isCached || $noCache ) {
 			$data = file_get_contents($url);
 			
-			if ( $data ) {
-				$sql = "Insert Into cache ( url, category, data, cacheExpires ) Values ( '" . $url . "', '" . $category . "', '" .
-					$conn->real_escape_string($data) . "', " . (time() + $cacheTime) . " );";
-				$conn->query($sql);
+			if ( $data && ! $noCache ) {
+				fspc_cache_set($url, $category, $data, $cacheTime);
 			}
 		}
 
@@ -74,7 +103,7 @@
         $timezone = str_replace('.', '', $timezone);
         $url = 'http://tzurl.org/zoneinfo-outlook/' . $timezone . '.ics';
         
-        $ics = fspc_cache_file_get($url, FSPC_GET_CONTENTS, 86400, 'timezone');
+        $ics = fspc_cache_file_get($url, FSPC_GET_CONTENTS, 86400 * 365, 'timezone');
 
 		if ( $ics ) {
 	        $startPos = strpos($ics, 'BEGIN:VTIMEZONE');

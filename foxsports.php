@@ -100,7 +100,11 @@
                     }
                 }
             }
-        }
+		}
+
+		$pools->clear();
+		$pools->__destruct();
+		unset($pools);
         
         return $poolId;
     }
@@ -146,7 +150,11 @@
             if ( $complist != '' ) {
                 $complist = substr($complist, 0, strlen($complist) - 1);
             }
-        }
+		}
+
+		$clubhtml->clear();
+		$clubhtml->__destruct();
+		unset($clubhtml);
 
         return $complist;
     }
@@ -167,7 +175,11 @@
             $teamname = '';
             if ( isset($div) ) {
                 $teamname = $div->find("a", 1)->plaintext;
-            }
+	    }
+
+		$html->clear();	
+		$html->__destruct();
+	    unset($html);
         }
 
         return $teamname;
@@ -182,7 +194,13 @@
         $url = fspc_fsp_gen_link($sportID, $assocID, $clubID, $compID, $teamID, 0, 1);
         $teamhtml = fspc_cache_file_get($url, FSPC_GET_HTML, 604800, 'fsp');
 
-        return fspc_fsp_get_team_name_from_html($teamhtml);
+		$teamname = fspc_fsp_get_team_name_from_html($teamhtml);
+
+		$teamhtml->clear();
+		$teamhtml->__destruct();
+		unset($teamhtml);
+
+		return $teamname;
     }
 
     // This helper function looks up a DOM object for the team name and formats it. Used
@@ -222,7 +240,11 @@
                     $seasonlist .= '-' . substr($matched[0], 9, strlen($matched[0]) - 9);
                 }
             }
-        }
+		}
+
+		$html->clear();
+		$html->__destruct();
+		unset($html);
 
         $seasonids = explode('-', $seasonlist);
 
@@ -237,7 +259,11 @@
 
                     $complist = $complist . $cparams['compID'] . '-';
                 }
-            }
+	    	}
+
+			$html->clear();
+			$html->__destruct();
+	    	unset($html);
         }
 
         // We trim the last "-" character off our competition list.
@@ -319,7 +345,7 @@
 
         foreach($compID as $comp) {
             $teamurl = fspc_fsp_gen_link($sportID, $assocID, $clubID, $comp, $teamID, 0, 1);
-            $teamhtml = str_get_html(fspc_cache_file_get($teamurl, FSPC_GET_CONTENTS, FSPC_DEFAULT_CACHE_TIME, 'fsp'));
+            $teamhtml = fspc_cache_file_get($teamurl, FSPC_GET_HTML, FSPC_DEFAULT_CACHE_TIME, 'fsp');
 
             if ( $teamname == '' ) $teamname = fspc_fsp_get_team_name_from_html($teamhtml);
 
@@ -332,7 +358,7 @@
                     if ( $rawtime != 'BYE' ) {
                         $venueurl = $game->find('td', 3)->find('a', 0)->href;
                         $venue = $game->find('td', 3)->find('a', 0)->plaintext;
-                        $scorefor = $game->find('td', 4)->plaintext;
+						$scorefor = $game->find('td', 4)->plaintext;
                         $opponenturl = $game->find('td', 6)->find('a', 0)->href;
                         $opponent = $game->find('td', 6)->find('a', 0)->plaintext;
                         $scoreagainst = $game->find('td', 7)->plaintext;
@@ -408,14 +434,18 @@
                         $rounddata['scoreagainst'] = $scoreagainst;
                         $rounddata['gameurl'] = $gameurl;
 
-                        $gamedata[$dtstamp] = $rounddata;
-                        unset($rounddata);
+						if ( $rounddata['venue'] != 'T.B.A.' ) {
+                        	$gamedata[$dtstamp] = $rounddata;
+						}
+			
+						unset($rounddata);
                         $timecheck[$dtstamp] = 1;
                     }
                 }
             }
             
-            $teamhtml->clear();
+			$teamhtml->clear();
+			$teamhtml->__destruct();
             unset($teamhtml);
         }
 
@@ -469,7 +499,11 @@
                         $venueaddress = trim($venue->find('td', 1)->plaintext);
                     }
                 }
-            }
+			}
+
+			$venuehtml->clear();
+			$venuehtml->__destruct();
+			unset($venuehtml);
 
             if ( $venueaddress != '' ) {
                 $location .= ', ' . $venueaddress;
