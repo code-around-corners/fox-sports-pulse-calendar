@@ -206,7 +206,12 @@
     // This helper function looks up a DOM object for the team name and formats it. Used
     // by other functions where needed.
     function fspc_fsp_get_team_name_from_html($html) {
-        $teamname = $html->find('h2', 0)->plaintext;
+	    if ( isset($html->find('h2', 0)->plaintext) ) {
+	        $teamname = $html->find('h2', 0)->plaintext;
+	    } else {
+		    $teamname = $html->find('div[class="historybar-left"]', 0)->find('a[class="history"]', -1)->plaintext;
+	    }
+	    
         $teamname = preg_replace('/[^:]*:([^\(]*).*/i', '$1', $teamname);
         $teamname = preg_replace('/&nbsp;/i', ' ', $teamname);
         $teamname = preg_replace('/[^A-Za-z0-9 .]*/i', '', $teamname);
@@ -397,8 +402,21 @@
                         $allday = 1;
                         $strtime = '00:00:00';
                     } else {
-                        $strtime = substr($rawtime, 0, 2) . ':' . substr($rawtime, 3, 2) . ':00';
+                        $strtime = substr($rawtime, 0, 2) . ':' . substr($rawtime, 3, 2) . ':00';                        
                     }
+                    
+                    if ( $opponent == '' && $opponenturl != '' && $rawtime != 'BYE' && $scorefor != '' && $scoreagainst != '' ) {
+                        $opponentCacheName = fspc_cache_get($opponenturl, "opponents");
+                        
+                        if ( ! $opponentCacheName ) {
+	                        $opponentHtml = file_get_contents($opponenturl);
+	                        $opponentCacheName = fspc_fsp_get_team_name_from_html(str_get_html($opponentHtml));
+	                        fspc_cache_set($opponenturl, "opponents", $opponentCacheName, 86400 * 90);
+	                    }
+	                    
+	                    $opponent = $opponentCacheName;
+                    }
+
 
                     $startdate = strtotime($strdate . ' ' . $strtime . ' - ' . $startoffset . ' minutes');
                     if ( $startdate > strtotime("now") ) $inpast = false;

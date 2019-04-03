@@ -202,5 +202,8 @@ for ( $x = 0; $x < count($events); $x++ ) {
 </table>
 </div>
 </div>
+<div style="display: none;">
+<?php echo $fullurl; ?>
+</div>
 </body>
 </html>
