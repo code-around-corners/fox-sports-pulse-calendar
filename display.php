@@ -7,65 +7,65 @@
 
 <style>
 body {
-    background-attachment: fixed;
-    background-color: rgb(219, 219, 219);
-    background-image: url(body-tail.gif);
-    background-position: 50% 0px;
-    background-repeat: repeat;
-    color: rgb(51, 51, 51);
-    display: block;
-    margin: 0px;
-    padding: 0px;
-    position: relative;
+	background-attachment: fixed;
+	background-color: rgb(219, 219, 219);
+	background-image: url(body-tail.gif);
+	background-position: 50% 0px;
+	background-repeat: repeat;
+	color: rgb(51, 51, 51);
+	display: block;
+	margin: 0px;
+	padding: 0px;
+	position: relative;
 }
 
 h1 {
-    font-size: 14px;
-    text-align: center;
+	font-size: 14px;
+	text-align: center;
 }
 
 table {
 	width: 100%;
-    font-size: 12px;
+	font-size: 12px;
 }
 
 td {
-    -webkit-text-size-adjust: 100%;
-    padding: 5px;
-    font-size: 12px;
+	-webkit-text-size-adjust: 100%;
+	padding: 5px;
+	font-size: 12px;
 }
 
 a {
-    color: rgb(205, 27, 0);
-    text-decoration: none;
+	color: rgb(205, 27, 0);
+	text-decoration: none;
 }
 
 .box {
-    background-color: rgb(255, 255, 255);
-    border-bottom-color: rgb(153, 153, 153);
-    border-bottom-style: solid;
-    border-bottom-width: 1px;
-    border-left-color: rgb(153, 153, 153);
-    border-left-style: solid;
-    border-left-width: 1px;
-    border-right-color: rgb(153, 153, 153);
-    border-right-style: solid;
-    border-right-width: 1px;
-    border-top-color: rgb(153, 153, 153);
-    border-top-style: solid;
-    border-top-width: 1px;
-    color: rgb(51, 51, 51);
-    display: block;
-    font-family: Sans-Serif;
-    font-size: 9px;
-    font-weight: normal;
-    margin: 10px;
-    padding: 10px;
+	background-color: rgb(255, 255, 255);
+	border-bottom-color: rgb(153, 153, 153);
+	border-bottom-style: solid;
+	border-bottom-width: 1px;
+	border-left-color: rgb(153, 153, 153);
+	border-left-style: solid;
+	border-left-width: 1px;
+	border-right-color: rgb(153, 153, 153);
+	border-right-style: solid;
+	border-right-width: 1px;
+	border-top-color: rgb(153, 153, 153);
+	border-top-style: solid;
+	border-top-width: 1px;
+	color: rgb(51, 51, 51);
+	display: block;
+	font-family: Sans-Serif;
+	font-size: 9px;
+	font-weight: normal;
+	margin: 10px;
+	padding: 10px;
 }
 
 .outer {
-    max-width: 800px;
-    margin: 0 auto;
+	max-width: 800px;
+	margin: 0 auto;
 }
 
 </style>
@@ -78,7 +78,7 @@ include_once("cache.php");
 
 date_default_timezone_set("UTC");
 
-error_reporting(E_ALL);                                                                                                                                                                    
+error_reporting(E_ALL);
 ini_set('display_errors', '1');
 
 $shortcode = $_GET['code'];
@@ -145,19 +145,19 @@ for ( $x = 0; $x < count($events); $x++ ) {
 	if ( $events[$x]['endDate'] > $today ) {
 		echo '<tr>' . "\n";
 
-        echo '<td width="30%">';
-        if ( strpos($events[$x]['summary'], '(Bye)') === false ) {
-		    echo date('D, M j, Y \a\t g:ia', strtotime($events[$x]['startDate']));
-        } else {
-            echo date('D, M j, Y', strtotime($events[$x]['startDate']));
-        }
-        echo '</td>' . "\n";
+		echo '<td width="30%">';
+		if ( strpos($events[$x]['summary'], '(Bye)') === false ) {
+			  echo date('D, M j, Y \a\t g:ia', strtotime($events[$x]['startDate']));
+		} else {
+			echo date('D, M j, Y', strtotime($events[$x]['startDate']));
+		}
+		echo '</td>' . "\n";
 
-        if ( $events[$x]['url'] != '' ) {
-		    echo '<td><b><a href="' . $events[$x]['url'] . '">' . $events[$x]['summary'] . '</a></b><br />';
-        } else {
-            echo '<td><b>' . $events[$x]['summary'] . '</b><br />';
-        }
+		if ( $events[$x]['url'] != '' ) {
+			  echo '<td><b><a href="' . $events[$x]['url'] . '">' . $events[$x]['summary'] . '</a></b><br />';
+		} else {
+			echo '<td><b>' . $events[$x]['summary'] . '</b><br />';
+		}
 
 		echo $events[$x]['location'] . '</td>' . "\n";
 		echo '</tr>' . "\n";
@@ -179,19 +179,19 @@ for ( $x = 0; $x < count($events); $x++ ) {
 	if ( $events[$x]['endDate'] <= $today ) {
 		echo '<tr>' . "\n";
 
-        echo '<td width="30%">';
-        if ( strpos($events[$x]['summary'], '(Bye)') === false ) {
-		    echo date('D, M j, Y \a\t g:ia', strtotime($events[$x]['startDate']));
-        } else {
-            echo date('D, M j, Y', strtotime($events[$x]['startDate']));
-        }
-        echo '</td>' . "\n";
+		echo '<td width="30%">';
+		if ( strpos($events[$x]['summary'], '(Bye)') === false ) {
+			  echo date('D, M j, Y \a\t g:ia', strtotime($events[$x]['startDate']));
+		} else {
+			echo date('D, M j, Y', strtotime($events[$x]['startDate']));
+		}
+		echo '</td>' . "\n";
 
-        if ( $events[$x]['url'] != '' ) {
-		    echo '<td><b><a href="' . $events[$x]['url'] . '">' . $events[$x]['summary'] . '</a></b><br />';
-        } else {
-            echo '<td><b>' . $events[$x]['summary'] . '</b><br />';
-        }
+		if ( $events[$x]['url'] != '' ) {
+			  echo '<td><b><a href="' . $events[$x]['url'] . '">' . $events[$x]['summary'] . '</a></b><br />';
+		} else {
+			echo '<td><b>' . $events[$x]['summary'] . '</b><br />';
+		}
 
 		echo $events[$x]['location'] . '</td>' . "\n";
 		echo '</tr>' . "\n";

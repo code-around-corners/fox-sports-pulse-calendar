@@ -73,7 +73,9 @@
 	}
 
     function fspc_cache_file_get($url, $mode = FSPC_GET_CONTENTS, $cacheTime = FSPC_DEFAULT_CACHE_TIME, $category = '') {
-		$noCache = isset($_GET['nocache']);
+        //echo "REQUEST: " . $url . "\r\n";
+
+        $noCache = isset($_GET['nocache']);
 		if ( $category != 'ics' ) $noCache = true;
 		$data = null;
 		$isCached = false;

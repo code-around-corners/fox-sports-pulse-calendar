@@ -157,27 +157,28 @@
     // This function spits out the iCal calendar for the fixture. It also adds in events from external
     // calendars if they've been specified. It does not return any data, but outputs the calendar to the
     // web page.
-    function fspc_cal_output_calendar($timecheck, $gamedata, $teamname, $timezone, $extdata, $exttz,
-                                      $clash, $text = false) {
+    function fspc_cal_get_calendar($timecheck, $gamedata, $teamname, $timezone, $extdata, $exttz, $clash, $text = false) {
         global $FSPC_FSP_BASE_URL;
+        
+        $calendarData = "";
 
         // As a precaution, we strip out any periods in the timezone. It shouldn't need them regardless,
         // and avoids someone trying to access the contents of the filesystem.
         $timezone = str_replace('.', '', $timezone);
 
-        echo "BEGIN:VCALENDAR\r\n";
-        echo "VERSION:2.0\r\n";
-        echo "PRODID:-//Code Around Corners//Fox Sports Pulse Calendar Subscription Tool v" . fspc_version() . "//EN\r\n";
-        echo "CALSCALE:GREGORIAN\r\n";
-        echo "METHOD:PUBLISH\r\n";
-        echo "X-WR-CALNAME:" . $teamname . "\r\n";
-        echo "X-WR-CALDESC:Fox Sports Pulse Team Calendar\r\n";
-        echo "X-WR-TIMEZONE:" . $timezone . "\r\n";
+        $calendarData .= "BEGIN:VCALENDAR\r\n";
+        $calendarData .= "VERSION:2.0\r\n";
+        $calendarData .= "PRODID:-//Code Around Corners//Fox Sports Pulse Calendar Subscription Tool v" . fspc_version() . "//EN\r\n";
+        $calendarData .= "CALSCALE:GREGORIAN\r\n";
+        $calendarData .= "METHOD:PUBLISH\r\n";
+        $calendarData .= "X-WR-CALNAME:" . $teamname . "\r\n";
+        $calendarData .= "X-WR-CALDESC:Fox Sports Pulse Team Calendar\r\n";
+        $calendarData .= "X-WR-TIMEZONE:" . $timezone . "\r\n";
 
-        echo fspc_cache_get_timezone($timezone);
+        $calendarData .= fspc_cache_get_timezone($timezone);
 
         foreach($exttz as $exttzdata) {
-            echo $exttzdata;
+            $calendarData .= $exttzdata;
         }
 
         ksort($timecheck);
@@ -227,39 +228,43 @@
                     $summary = $teamname . ' (' . $game['scorefor'] . ') v ' . $game['opponent'] . ' (' . $game['scoreagainst'] . ')';
                 }
 
-                echo "BEGIN:VEVENT\r\n";
-                echo "UID:" . $game['uid'] . "\r\n";
-                echo "DTSTAMP:" . $dtstamp . "Z\r\n";
-                echo "SUMMARY:" . $summary . "\r\n";
+                if ( $game['opponent'] != "" || $game['rawtime'] == 'BYE' ) {
+                    $calendarData .= "BEGIN:VEVENT\r\n";
+                    $calendarData .= "UID:" . $game['uid'] . "\r\n";
+                    $calendarData .= "DTSTAMP:" . $dtstamp . "Z\r\n";
+                    $calendarData .= "SUMMARY:" . $summary . "\r\n";
 
-                if ( $game['allday'] == 0 ) {
-                    echo "DTSTART;TZID=" . $timezone . ":" . $fstartdate . "\r\n";
+                    if ( $game['allday'] == 0 ) {
+                        $calendarData .= "DTSTART;TZID=" . $timezone . ":" . $fstartdate . "\r\n";
 
-                    if ( $fstartdate != $fenddate ) {
-                        echo "DTEND;TZID=" . $timezone . ":" . $fenddate . "\r\n";
+                        if ( $fstartdate != $fenddate ) {
+                            $calendarData .= "DTEND;TZID=" . $timezone . ":" . $fenddate . "\r\n";
+                        }
+                    } else {
+                        $calendarData .= "DTSTART;VALUE=DATE:" . date('Ymd', $game['gamestart']) . "\r\n";
+                        $calendarData .= "DTEND;VALUE=DATE:" . date('Ymd', $game['gameend']) . "\r\n";
                     }
-                } else {
-                    echo "DTSTART;VALUE=DATE:" . date('Ymd', $game['gamestart']) . "\r\n";
-                    echo "DTEND;VALUE=DATE:" . date('Ymd', $game['gameend']) . "\r\n";
+
+                    $calendarData .= "LOCATION:" . $location . "\r\n";
+
+                    if ( $game['gameurl'] != '' ) {
+                        $calendarData .= "URL:" . $FSPC_FSP_BASE_URL . str_replace('&amp;', '&', $game['gameurl']) . "\r\n";
+                    }
+
+                    $calendarData .= "END:VEVENT\r\n";
                 }
-
-                echo "LOCATION:" . $location . "\r\n";
-
-                if ( $game['gameurl'] != '' ) {
-                    echo "URL:" . $FSPC_FSP_BASE_URL . str_replace('&amp;', '&', $game['gameurl']) . "\r\n";
-                }
-
-                echo "END:VEVENT\r\n";
             }
 
             for ( $x = 1; $x <= $extcount; $x++ ) {
                 if ( $outputcheck[$x] ) {
-                    echo $extdata[$x][$dtstamp];
+                    $calendarData .= $extdata[$x][$dtstamp];
                 }
             }
         }
 
-        echo "END:VCALENDAR\r\n";
+        $calendarData .= "END:VCALENDAR\r\n";
+        
+        return $calendarData;
     }
 
 ?>
